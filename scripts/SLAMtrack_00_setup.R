@@ -1,6 +1,7 @@
 ## SET PARAMETERS ----
 
 # experimental descriptors
+exp_type <- "smallslam"               # slamdunk or smallslam
 exp_tissue_origin <- "liver" 
 exp_tissue_target <- "kidney"
 exp_species <- "mouse"
@@ -34,3 +35,5 @@ dir_scripts <- here("scripts")
 here(dir_scripts, "SLAMtrack_01_plotting_themes.R") %>% source()
 here(dir_scripts, "SLAMtrack_02_miscellaneous_functions.R") %>% source()
 here(dir_scripts, "SLAMtrack_20_plotting_functions.R") %>% source()
+
+if (exp_type == "slamdunk") {is_slamdunk <- TRUE} else {is_slamdunk <- FALSE}

@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 
 # Overview of experimental design
 
-```{r experimental_description, child=here(dir_active, "input", "exp_setup.txt")}
+```{r experimental_description, child=here(dir_data, "input", "exp_setup.txt")}
 
 #here(dir_active, "input", "exp_setup.txt") %>% read_file() %>% print()
 
@@ -49,14 +49,14 @@ df_meta %>% select(-library) %>% knitr::kable()
 
 ## Read counts
 
-```{r reads_table}
+```{r reads_table, eval=is_slamdunk}
 df_QC %>% knitr::kable()
 ```
 
 <br>
 <br>
 
-```{r reads_plot}
+```{r reads_plot, eval=is_slamdunk}
 
 df_QC %>% 
   mutate(
