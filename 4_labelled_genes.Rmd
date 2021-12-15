@@ -1,0 +1,420 @@
+---
+title: "SLAMtrack - Labelled genes"
+author: "RWH"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+
+output: 
+  html_document:
+    theme: readable 
+    highlight: pygments 
+    anchor_sections: FALSE
+
+---
+
+```{r setup, include=FALSE}
+
+source("scripts/SLAMtrack_00_setup.R")
+source("scripts/SLAMtrack_11_import_quick.R")
+
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  error = TRUE, 
+  message = FALSE
+  )
+  
+```
+
+# Approach 1 = threshold T>C conversion rate
+
+## Identifying labelled reads in the tissue of origin
+
+Using the negative control group, `r baseline_group`, we can define a threshold of T>C conversion that is likely to signify labelling.  This is set as any conversion rate exceeding a given centile (`r threshold_TC_centile`) in this control group.    
+
+```{r set_TC_threshold_origin}
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  filter(group == baseline_group) %>% 
+  select(conversionRate) -> baseline_conversionRates
+
+baseline_conversionRates$conversionRate %>% 
+  quantile(threshold_TC_centile) -> threshold_TC_absolute
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  ggplot(aes(x = group, y = conversionRate)) +
+  geom_violin(fill = NA) +  
+  geom_jitter(alpha = 0.01) +
+  scale_y_sqrt() +
+  geom_hline(yintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
+
+p %>% add_theme_SLAMtrack()
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  mutate(
+    conversionRate = conversionRate + cR_nudge
+  ) %>% 
+  ggplot(aes(y = 1, x = conversionRate, colour = group)) +
+  geom_density_ridges(fill = NA) +
+  scale_x_log10() +
+  geom_vline(xintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
+
+p %>% add_theme_SLAMtrack()
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  mutate(
+    conversionRate = conversionRate + cR_nudge
+  ) %>% 
+  ggplot(aes(y = library, x = conversionRate, fill = group)) +
+  geom_density_ridges(alpha = 0.6) +
+  scale_x_log10() +
+  geom_vline(xintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
+
+p %>% add_theme_SLAMtrack()
+
+```
+
+We can then classify each gene, for each library, as being either `labelled`, `not labelled`.  
+
+```{r count_labelled_genes_origin}
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  mutate(
+    labelled = case_when(
+      conversionRate < threshold_TC_absolute ~ "not labelled",
+      conversionRate >= threshold_TC_absolute ~ "labelled"
+    )) -> df_tcounts_origin
+
+df_tcounts_origin %>% 
+  group_by(sample_name) %>% 
+  summarise(
+    group = group[1],
+    genes_all = length(labelled),
+    genes_labelled = sum(labelled == "labelled"),
+    pc = genes_labelled / genes_all
+  ) %>% 
+  arrange(group, sample_name) -> t
+
+t %>% knitr::kable()
+
+t %>% 
+  group_by(group) %>% 
+  summarise(
+    percent_labelled = CI_95(pc, digit = 3)
+  ) %>% knitr::kable()
+
+t %>% 
+  ggplot(aes(x = group, y = pc)) + 
+  geom_boxplot(width = 0.2, alpha = 0.6, colour = "grey") +
+  geom_jitter(width = 0.0, colour = "red") +
+  ylab("percent genes labelled") -> p
+
+p %>% add_theme_SLAMtrack()
+
+```
+
+
+How does labelling correlate with gene abundance?  Bin genes by abundance and plot % of labelled reads:
+
+```{r plot_labelling_by_cpm_origin}
+
+df_tcounts_origin %>% 
+  mutate(reads_band = cut_width(readsCPM, width = 10)) %>% 
+  group_by(group, library, reads_band) %>% 
+  summarise(
+    mean_CPM = mean(readsCPM),
+    sum_CPM = sum(readsCPM),
+    sum_lab = sum(labelled == "labelled"),
+    total = length(labelled),
+    pc = sum_lab / total
+  ) %>% 
+  mutate(
+    cum_CPM = cumsum(sum_CPM)
+    )-> df_tcounts_labelled_cut
+
+df_tcounts_labelled_cut %>% 
+  ggplot(aes(x = mean_CPM, y = pc, colour = group)) +
+  geom_line(aes(group = library)) +
+  scale_x_log10(limits = c(1, 1000)) +
+  xlab("CPM") +
+  ylab("Labelled reads (%)") -> p
+
+p %>% add_theme_SLAMtrack()
+
+df_tcounts_labelled_cut %>% 
+  ggplot(aes(x = mean_CPM, y = pc, colour = group)) +
+#  geom_line(aes(group = library)) +
+  geom_smooth(fullrange = TRUE) +
+  scale_x_log10(limits = c(2, 100)) +
+  xlab("CPM") +
+  ylab("Labelled reads (%)") -> p
+
+p %>% add_theme_SLAMtrack()
+
+```
+
+
+
+## Identifying labelled reads in the target tissue
+
+Using the negative control group, `r baseline_group`, we can define a threshold of T>C conversion that is likely to signify labelling.  This is set as any conversion rate exceeding a given centile (`r threshold_TC_centile`) in this control group.    
+
+```{r set_TC_threshold_target}
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  filter(group == baseline_group) %>% 
+  select(conversionRate) -> baseline_conversionRates
+
+baseline_conversionRates$conversionRate %>% 
+  quantile(threshold_TC_centile) -> threshold_TC_absolute
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  ggplot(aes(x = group, y = conversionRate)) +
+  geom_violin(fill = NA) +  
+  geom_jitter(alpha = 0.01) +
+  scale_y_sqrt() +
+  geom_hline(yintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
+
+p %>% add_theme_SLAMtrack()
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  mutate(
+    conversionRate = conversionRate + cR_nudge
+  ) %>% 
+  ggplot(aes(y = 1, x = conversionRate, colour = group)) +
+  geom_density_ridges(fill = NA) +
+  scale_x_log10() +
+  geom_vline(xintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
+
+p %>% add_theme_SLAMtrack()
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  mutate(
+    conversionRate = conversionRate + cR_nudge
+  ) %>% 
+  ggplot(aes(y = library, x = conversionRate, fill = group)) +
+  geom_density_ridges(alpha = 0.6) +
+  scale_x_log10() +
+  geom_vline(xintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
+
+p %>% add_theme_SLAMtrack()
+
+```
+
+<br>
+<br>
+
+We can then classify each gene, for each library, as being either `labelled`, `not labelled`.  
+
+```{r count_labelled_genes_target}
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  mutate(
+    labelled = case_when(
+      conversionRate < threshold_TC_absolute ~ "not labelled",
+      conversionRate >= threshold_TC_absolute ~ "labelled"
+    )) -> df_tcounts_target
+
+df_tcounts_target %>% 
+  group_by(sample_name) %>% 
+  summarise(
+    group = group[1],
+    genes_all = length(labelled),
+    genes_labelled = sum(labelled == "labelled"),
+    pc = genes_labelled / genes_all
+  ) %>% 
+  arrange(group, sample_name) -> t
+
+t %>% knitr::kable()
+
+t %>% 
+  group_by(group) %>% 
+  summarise(
+    percent_labelled = CI_95(pc, digit = 3)
+  ) %>% knitr::kable()
+
+t %>% 
+  ggplot(aes(x = group, y = pc)) + 
+  geom_boxplot(width = 0.2, alpha = 0.6, colour = "grey") +
+  geom_jitter(width = 0.0, colour = "red") +
+  ylab("percent genes labelled") -> p
+
+p %>% add_theme_SLAMtrack()
+
+```
+
+
+How does labelling correlate with gene abundance?  Bin genes by abundance and plot % of labelled reads:
+
+```{r plot_labelling_by_cpm_target}
+
+df_tcounts_target %>% 
+  mutate(reads_band = cut_width(readsCPM, width = 10)) %>% 
+  group_by(group, library, reads_band) %>% 
+  summarise(
+    mean_CPM = mean(readsCPM),
+    sum_CPM = sum(readsCPM),
+    sum_lab = sum(labelled == "labelled"),
+    total = length(labelled),
+    pc = sum_lab / total
+  ) %>% 
+  mutate(
+    cum_CPM = cumsum(sum_CPM)
+    )-> df_tcounts_labelled_cut
+
+df_tcounts_labelled_cut %>% 
+  ggplot(aes(x = mean_CPM, y = pc, colour = group)) +
+  geom_line(aes(group = library)) +
+  scale_x_log10(limits = c(1, 1000)) +
+  xlab("CPM") +
+  ylab("Labelled reads (%)") -> p
+
+p %>% add_theme_SLAMtrack()
+
+df_tcounts_labelled_cut %>% 
+  ggplot(aes(x = mean_CPM, y = pc, colour = group)) +
+#  geom_line(aes(group = library)) +
+  geom_smooth(fullrange = TRUE) +
+  scale_x_log10(limits = c(2, 100)) +
+  xlab("CPM") +
+  ylab("Labelled reads (%)") -> p
+
+p %>% add_theme_SLAMtrack()
+
+```
+
+
+# Approach 2 = gene-wise delta T>C conversion rate
+
+## In the tissue of origin
+
+```{r delta_origin}
+
+df_tcounts %>%
+  filter(tissue == exp_tissue_origin) %>% 
+  filter(group == baseline_group) %>% 
+  group_by(gene_name) %>% 
+  summarise(
+    mean_CPM = mean(readsCPM)
+    ) -> df_tcounts_origin_cpm
+
+df_tcounts %>%
+  filter(tissue == exp_tissue_origin) %>% 
+  group_by(gene_name, group) %>% 
+  summarise(
+    mean_CR = mean(conversionRate)
+    ) %>% 
+  pivot_wider(names_from = group, values_from = mean_CR) %>% 
+  mutate(delta := !!as.name(pos_group) - !!as.name(neg_group)) %>% 
+  left_join(df_tcounts_origin_cpm) %>% 
+  mutate(
+    `delta sign` = case_when(
+      delta > 0 ~ "pos", 
+      delta < 0 ~ "neg", 
+      delta == 0 ~ "zero")
+  ) -> df_tcounts_delta_origin
+
+df_tcounts_delta_origin %>% 
+  filter(mean_CPM > 5) %>% 
+  ggplot(aes(x = mean_CPM, y = delta)) + 
+  geom_point(alpha = 0.05) +
+  geom_hline(yintercept = 0, colour = "Red", linetype = 2) +
+  scale_x_log10() +
+  theme_SLAMtrack()
+
+df_tcounts_delta_origin %>% 
+  drop_na() %>% 
+  group_by(`delta sign`) %>% 
+  summarise(count = n()) %>% 
+  knitr::kable()
+
+df_tcounts_delta_origin %>% 
+  filter(mean_CPM > 1) %>% 
+ filter(abs(delta) < 0.1) %>% 
+  ggplot(aes(x = delta, fill = `delta sign`)) +
+  geom_histogram() + 
+  facet_wrap(~`delta sign`) -> p
+
+p %>% add_theme_SLAMtrack() + theme_smaller()
+
+df_tcounts_delta_origin %>% 
+  merge_markers_delta(df_marker_origin) %>% 
+  plot_markers_points_delta()
+
+```
+
+## In the target tissue
+
+```{r delta_target}
+
+df_tcounts %>%
+  filter(tissue == exp_tissue_target) %>% 
+  filter(group == baseline_group) %>% 
+  group_by(gene_name) %>% 
+  summarise(
+    mean_CPM = mean(readsCPM)
+    ) -> df_tcounts_target_cpm
+
+df_tcounts %>%
+  filter(tissue == exp_tissue_target) %>% 
+  group_by(gene_name, group) %>% 
+  summarise(
+    mean_CR = mean(conversionRate)
+    ) %>% 
+  pivot_wider(names_from = group, values_from = mean_CR) %>% 
+  mutate(delta := !!as.name(pos_group) - !!as.name(neg_group)) %>% 
+  left_join(df_tcounts_target_cpm) %>% 
+  mutate(
+    `delta sign` = case_when(
+      delta > 0 ~ "pos", 
+      delta < 0 ~ "neg", 
+      delta == 0 ~ "zero")
+  ) -> df_tcounts_delta_target
+
+df_tcounts_delta_target %>% 
+  filter(mean_CPM > 5) %>% 
+  ggplot(aes(x = mean_CPM, y = delta)) + 
+  geom_point(alpha = 0.05) +
+  geom_smooth() +
+  geom_hline(yintercept = 0, colour = "Red", linetype = 2) +
+  scale_x_log10() +
+  theme_SLAMtrack()
+
+df_tcounts_delta_target %>% 
+  drop_na() %>% 
+  group_by(`delta sign`) %>% 
+  summarise(count = n()) %>% 
+  knitr::kable()
+
+df_tcounts_delta_target %>% 
+  filter(mean_CPM > 1) %>% 
+  filter(abs(delta) < 0.005) %>% 
+  ggplot(aes(x = delta, fill = `delta sign`)) +
+  geom_histogram() + 
+  facet_wrap(~`delta sign`) -> p
+
+p %>% add_theme_SLAMtrack() + theme_smaller()
+
+df_tcounts_delta_target %>% 
+  merge_markers_delta(df_marker_origin) %>% 
+  plot_markers_points_delta(cpm_threshold = 10, delta_threshold = 0.05)
+
+df_tcounts_delta_target %>% 
+  merge_markers_delta(df_marker_origin) %>% 
+  plot_markers_ridges_delta(cpm_threshold = 10, delta_threshold = 0.05)
+
+df_tcounts_delta_target %>% 
+  merge_markers_delta(df_marker_target) %>% 
+  plot_markers_points_delta(delta_threshold = 0.05)
+
+  
+```
+

@@ -1,0 +1,153 @@
+---
+title: "SLAMtrack - T>C"
+author: "RWH"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+
+output: 
+  html_document:
+    theme: readable 
+    highlight: pygments 
+    anchor_sections: FALSE
+
+---
+
+```{r setup, include=FALSE}
+
+source("scripts/SLAMtrack_00_setup.R")
+source("scripts/SLAMtrack_11_import_quick.R")
+
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  error = TRUE, 
+  message = FALSE,
+  fig.path = "figs/"
+  )
+#  fig.path = here(dir_active, "output/")
+  
+```
+
+
+# T>C conversion rates
+
+On a linear scale:  
+
+```{r TC_vs_CPM}
+
+df_tcounts %>% 
+  ggplot(aes(x = readsCPM, y = conversionRate, colour = group)) +
+  geom_point(alpha = 0.01) +
+  facet_wrap(~tissue) +
+  scale_x_log10() +
+  xlab("gene abundance\nreads per million") +
+  ylab("T>C conversion rate") -> p
+
+p %>% add_theme_SLAMtrack() 
+
+df_tcounts %>% 
+  ggplot(aes(x = readsCPM, y = conversionRate, colour = group)) +
+  geom_smooth() +
+  facet_wrap(~tissue) +
+  scale_x_log10() + 
+  xlab("gene abundance\nreads per million") +
+  ylab("T>C conversion rate") -> p
+
+p %>% add_theme_SLAMtrack() 
+
+```
+
+On sqrt / log scales:  
+
+```{r TC_vs_CPM_log10}
+
+df_tcounts %>% 
+  ggplot(aes(x = readsCPM, y = conversionRate, colour = group)) +
+  geom_point(alpha = 0.01) +
+  facet_wrap(~tissue) +
+  scale_x_log10() +
+  scale_y_sqrt() +
+  xlab("gene abundance\nreads per million") +
+  ylab("T>C conversion rate") -> p
+
+p %>% add_theme_SLAMtrack() 
+
+df_tcounts %>% 
+  ggplot(aes(x = readsCPM, y = conversionRate, colour = group)) +
+  geom_smooth() +
+  facet_wrap(~tissue, labeller = labeller(.default = toupper)) +
+  scale_x_log10() +
+  scale_y_sqrt() +
+  xlab("gene abundance\n(reads per million)") +
+  ylab("T>C conversion rate\n(measure of RNA labelling)") -> p
+
+p %>% add_theme_SLAMtrack() %>% remove_guide_fill()
+
+# REMOVE THIS LINE - A TEMPORARY FIX TO GENERATE FIGS WITH WIDTH = 3; HEIGHT = 2
+# q + theme(axis.title = element_text(size = 10), legend.text = element_text(size = 8), legend.title = element_text(size = 10))
+
+df_tcounts %>% 
+  mutate(conversionRate = conversionRate + cR_nudge) %>% 
+  ggplot(aes(x = conversionRate, y = 1, colour = group)) +
+  geom_density_ridges(fill = NA) +
+  facet_wrap(~tissue) +
+  scale_x_log10() +
+  xlab("T>C conversion rate") +
+  ylab("probability density") -> p
+
+p %>% add_theme_SLAMtrack() 
+
+```
+
+# T>C conversion rates in known marker genes
+
+## Within the tissue of origin
+
+Known marker genes within `r exp_tissue_origin`:  
+
+```{r TC_marker_genes_origin}
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_origin) %>%
+  merge_markers(df_marker_origin) %>% 
+  plot_markers_points()
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_origin) %>%
+  merge_markers(df_marker_origin) %>% 
+  plot_markers_ridges()
+
+```
+
+## Within the target tissue
+
+Known marker genes within `r exp_tissue_target`:  
+
+```{r TC_marker_genes_target}
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  merge_markers(df_marker_target) %>% 
+  plot_markers_points()
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  merge_markers(df_marker_target) %>% 
+  plot_markers_ridges()
+
+```
+
+
+Known marker genes from `r exp_tissue_origin` within `r exp_tissue_target`:  
+
+```{r TC_marker_genes_target_origin}
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  merge_markers(df_marker_origin) %>% 
+  plot_markers_points()
+
+df_tcounts %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  merge_markers(df_marker_origin) %>% 
+  plot_markers_ridges()
+
+```

@@ -1,0 +1,134 @@
+---
+title: "SLAMtrack - mapping to targeted genes"
+author: "RWH"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+
+output: 
+  html_document:
+    theme: readable 
+    highlight: pygments 
+    anchor_sections: FALSE
+
+---
+
+```{r setup, include=FALSE}
+
+source("scripts/SLAMtrack_00_setup.R")
+source("scripts/SLAMtrack_11_import_quick.R")
+source("scripts/SLAMtrack_12_import_miniMAP.R")
+
+
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  error = TRUE, 
+  message = FALSE
+  )
+  
+```
+
+# Notes
+
+Tried using grep with minimal success.  Some reverse complement LoxP sequence in Crepos livers but surrounding sequences didn't really make sense.  No hits for GFP sequence.  Therefore tried mapping to a short .fasta file containing albumin, GFP and LoxP sequences (see miniMAP.sh).  Took ~30 mins for 24 files (parallel x4).  
+
+NB when setting up .fa file, to reduce fasta files to a single line: `cat file.txt | tr -d '\n'`.  
+
+
+# Setup
+
+First run `miniMAP.sh` and then put output files into `data/miniMAP` directory.  
+
+# Results
+
+First plotted so that each gene panel has its own scale (to better appreciate any between-group differences):  
+
+```{r plot_scales_free}
+
+df_miniMAP %>% 
+  ggplot(aes(x = group, y = hits_pc, colour = group)) +
+  geom_jitter(width = 0.2) +
+  coord_flip() +
+  scale_y_sqrt() +
+  facet_grid(cols = vars(gene), rows = vars(tissue), scales = "free_x") +
+  ylab("mapped\n(% of sequenced reads)") -> p
+
+p %>% add_theme_SLAMtrack() + theme_smaller()  +
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+```{r plot_scales_free_old, eval = FALSE}
+
+df_miniMAP %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  ggplot(aes(x = group, y = hits_pc, colour = group)) +
+  geom_jitter(width = 0.2) +
+  coord_flip() +
+  facet_wrap(~gene, scales = "free_x") +
+  ylab("mapped\n(% of sequenced reads)") +
+  ggtitle(paste(toupper(exp_tissue_origin)),":") -> p
+
+
+p %>% add_theme_SLAMtrack() + theme_smaller() 
+
+
+df_miniMAP %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  ggplot(aes(x = group, y = hits_pc, colour = group)) +
+  geom_jitter(width = 0.2) +
+  coord_flip() +
+  facet_wrap(~gene, scales = "free_x") +
+  ylab("mapped\n(% of sequenced reads)") +
+  ggtitle(paste(toupper(exp_tissue_target)),":") -> p
+
+p %>% add_theme_SLAMtrack() + theme_smaller()
+
+```
+
+<br>
+<br>
+
+Then re-plotted so that all results are on the same scale (to better appreciate absolute gene expression levels between genes):  
+
+```{r plot_scales_fixed}
+
+df_miniMAP %>% 
+  ggplot(aes(x = group, y = hits_pc, colour = group)) +
+  geom_jitter(width = 0.2) +
+  coord_flip() +
+  scale_y_sqrt() +
+  facet_grid(cols = vars(gene), rows = vars(tissue)) +
+  ylab("mapped\n(% of sequenced reads)") -> p
+
+p %>% add_theme_SLAMtrack() + theme_smaller() 
+
+```
+
+```{r plot_scales_fixed_old, eval = FALSE}
+
+df_miniMAP %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  ggplot(aes(x = group, y = hits_pc, colour = group)) +
+  geom_jitter(width = 0.2) +
+  coord_flip() +
+  facet_wrap(~gene) +
+  ylab("mapped\n(% of sequenced reads)") +
+  ggtitle(paste(toupper(exp_tissue_origin)),":") -> p
+
+p %>% add_theme_SLAMtrack() + theme_smaller() 
+
+
+df_miniMAP %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  ggplot(aes(x = group, y = hits_pc, colour = group)) +
+  geom_jitter(width = 0.2) +
+  coord_flip() +
+  facet_wrap(~gene) +
+  ylab("mapped\n(% of sequenced reads)") +
+  ggtitle(paste(toupper(exp_tissue_target)), ":") -> p
+
+p %>% add_theme_SLAMtrack() + theme_smaller()
+
+```
+
+
+

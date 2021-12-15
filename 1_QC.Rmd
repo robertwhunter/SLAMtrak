@@ -1,0 +1,130 @@
+---
+title: "SLAMtrack - overview"
+author: "RWH"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+
+output: 
+  html_document:
+    theme: readable 
+    highlight: pygments 
+    anchor_sections: FALSE
+
+---
+
+```{r setup, include=FALSE}
+
+source("scripts/SLAMtrack_00_setup.R")
+source("scripts/SLAMtrack_11_import_quick.R")
+
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  error = TRUE, 
+  message = FALSE
+  )
+
+#  fig.path = here(dir_active, "output/")
+
+```
+
+
+# Overview of experimental design
+
+```{r experimental_description, child=here(dir_active, "input", "exp_setup.txt")}
+
+#here(dir_active, "input", "exp_setup.txt") %>% read_file() %>% print()
+
+```
+
+
+## Sample meta-data
+
+```{r metadata_table}
+df_meta %>% select(-library) %>% knitr::kable()
+
+```
+
+
+# Overview of SLAMDUNK sequencing data
+
+## Read counts
+
+```{r reads_table}
+df_QC %>% knitr::kable()
+```
+
+<br>
+<br>
+
+```{r reads_plot}
+
+df_QC %>% 
+  mutate(
+    sequenced = sequenced - mapped,
+    mapped = mapped - retained,
+    retained = retained - counted
+  ) %>% 
+  pivot_longer(cols = c("counted", "retained", "mapped", "sequenced"),
+               names_to = "category",
+               values_to = "reads") %>% 
+  mutate(sample_name = paste(sample_name, tissue, group)) -> df_multQC_readsL
+
+df_multQC_readsL$category %>% 
+  as.factor() %>% 
+  fct_relevel(
+    "counted",
+    "retained",
+    "mapped",
+    "sequenced"
+  ) %>% fct_rev() -> df_multQC_readsL$category
+
+df_multQC_readsL %>% 
+  filter(category %in% c("sequenced", "mapped", "retained", "counted")) %>% 
+  ggplot(aes(x = sample_name, y = reads, fill = category)) +
+  geom_col(alpha = 0.6, position = position_stack(), width = 0.8) +
+  coord_flip() +
+  theme_SLAMtrack() +
+  theme(axis.text.y = element_text(size = 6), 
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(size = 8),
+        axis.title.x = element_text(size = 10),
+        legend.text = element_text(size = 8),
+        legend.title = element_text(size = 10)) +
+  sf_SLAMtrack1
+
+```
+
+## Library structure
+
+Bear in mind that this may have an impact on labelling frequency (higher in more abundance reads).  
+
+```{r library_structure}
+
+df_tcounts %>% 
+#  filter(readsCPM > 0) %>% 
+  ggplot(aes(x = readsCPM, colour = group, y = 1)) +
+  geom_density_ridges(fill = NA) +
+  scale_x_log10() +
+  facet_wrap(~tissue) +
+  theme_SLAMtrack_mutations_plot() +
+  sc_SLAMtrack_groups
+
+df_tcounts %>% 
+#  filter(readCount > 0) %>% 
+  ggplot(aes(x = readCount, colour = group, y = 1)) +
+  geom_density_ridges(fill = NA) +
+  scale_x_log10() +
+  facet_wrap(~tissue) +
+  theme_SLAMtrack_mutations_plot() +
+  sc_SLAMtrack_groups
+
+df_tcounts %>% 
+  filter(coverageOnTs > 0) %>% 
+  ggplot(aes(x = coverageOnTs, colour = group, y = 1)) +
+  geom_density_ridges(fill = NA) +
+  scale_x_log10() +
+  facet_wrap(~tissue) +
+  theme_SLAMtrack_mutations_plot() +
+  sc_SLAMtrack_groups
+
+```
+

@@ -1,0 +1,74 @@
+---
+title: "SLAMtrack - mutation rates"
+author: "RWH"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+
+output: 
+  html_document:
+    theme: readable 
+    highlight: pygments 
+    anchor_sections: FALSE
+
+---
+
+```{r setup, include=FALSE}
+
+source("scripts/SLAMtrack_00_setup.R")
+source("scripts/SLAMtrack_11_import_quick.R")
+
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  error = TRUE, 
+  message = FALSE,
+  warning = TRUE
+  )
+
+# fig.path = here(dir_active, "output/"
+
+```
+
+
+# Analysis
+
+All reads over a threshold read count of `r mutations_threshold_readcount` analysed to give strand-specific mutation rates.  Expect T>C conversions on the +ve strand and A>G conversions on the -ve strand.  
+
+
+## Mutation rates in the tissue of origin
+
+```{r mutations_tissue_origin}
+
+df_meta_short %>% 
+  left_join(df_mutations_L) %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  reshape_mutations_for_TABACO(plot_strand = "+") %>% 
+  plot_TABACO_grid_rates() +
+  ggtitle(paste("Mutation rates in", exp_tissue_origin, "\non the +ve strand"))
+
+df_meta_short %>% 
+  left_join(df_mutations_L) %>% 
+  filter(tissue == exp_tissue_origin) %>% 
+  reshape_mutations_for_TABACO(plot_strand = "-") %>% 
+  plot_TABACO_grid_rates() +
+  ggtitle(paste("Mutation rates in", exp_tissue_origin, "\non the -ve strand"))
+
+```
+
+## Mutation rates in the target tissue
+
+```{r mutations_tissue_target}
+
+df_meta_short %>% 
+  left_join(df_mutations_L) %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  reshape_mutations_for_TABACO(plot_strand = "+") %>% 
+  plot_TABACO_grid_rates() +
+  ggtitle(paste("Mutation rates in", exp_tissue_target, "\non the +ve strand"))
+
+df_meta_short %>% 
+  left_join(df_mutations_L) %>% 
+  filter(tissue == exp_tissue_target) %>% 
+  reshape_mutations_for_TABACO(plot_strand = "-") %>% 
+  plot_TABACO_grid_rates() +
+  ggtitle(paste("Mutation rates in", exp_tissue_target, "\non the -ve strand"))
+
+```
