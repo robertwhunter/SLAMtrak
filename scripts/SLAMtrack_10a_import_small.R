@@ -1,3 +1,6 @@
+library(tidyverse)
+library(here)
+
 ## IMPORT META-DATA ----
 
 df_meta <- here(dir_data, "input", "metadata.csv") %>% read_csv()

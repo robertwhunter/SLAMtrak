@@ -1,3 +1,6 @@
+NEED TO MAKE SURE WE ARE ZOOMING INTO AXES CORRECTLY - i.e. cartesian-coords
+
+
 Refine looking for labelled genes and the miniMAP analysis.  
 
 In labelled genes:

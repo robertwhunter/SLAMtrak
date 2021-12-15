@@ -22,9 +22,10 @@ knitr::opts_chunk$set(
   error = TRUE, 
   message = FALSE,
   fig.path = "figs/"
+# fig.path = paste0("figs/", params$fname, "/")
+# fig.path = paste0(dir_data, "output/")
   )
-#  fig.path = here(dir_active, "output/")
-  
+
 ```
 
 

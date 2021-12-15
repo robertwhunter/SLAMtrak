@@ -20,10 +20,11 @@ source("scripts/SLAMtrack_11_import_quick.R")
 knitr::opts_chunk$set(
   echo = FALSE, 
   error = TRUE, 
-  message = FALSE
+  message = FALSE,
+  fig.path = "figs/"
+# fig.path = paste0("figs/", params$fname, "/")
+# fig.path = paste0(dir_data, "output/")
   )
-
-#  fig.path = here(dir_active, "output/")
 
 ```
 
