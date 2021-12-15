@@ -1,7 +1,6 @@
 ## SET PARAMETERS ----
 
 # experimental descriptors
-exp_dir <- "slamdunk_210910"
 exp_tissue_origin <- "liver" 
 exp_tissue_target <- "kidney"
 exp_species <- "mouse"
@@ -26,10 +25,8 @@ library(here)
 
 ## SET PATHS ----
 
-dir_root <- "~/OneDrive - University of Edinburgh/R files/Labdata - RNAseq"
-dir_data <- here(dir_root, "Data_SLAMDUNK")
+# dir_data and dir_meta set in .Rprofile
 dir_scripts <- here("scripts")
-dir_active <- here(dir_data, exp_dir)
 
 
 ## SET-UP SCRIPTS ----
@@ -37,11 +34,3 @@ dir_active <- here(dir_data, exp_dir)
 here(dir_scripts, "SLAMtrack_01_plotting_themes.R") %>% source()
 here(dir_scripts, "SLAMtrack_02_miscellaneous_functions.R") %>% source()
 here(dir_scripts, "SLAMtrack_20_plotting_functions.R") %>% source()
-
-
-# here(dir_scripts_RWH, "Set_theme_ggplot2.R") %>% source()
-# here(dir_scripts_RWH, "Useful_functions.R") %>% source()
-# here(dir_scripts_RWH, "Clustering.R") %>% source()
-
-# source(paste0(dir_scripts, "1d_quantseq_plotting_functions.R"))
-# source("~/OneDrive - University of Edinburgh/R files/Labdata - RNAseq/Scripts_smallSLAM/3_analysis_TABACO.R")
