@@ -1,26 +1,3 @@
----
-title: "SLAMtrack - readme"
-author: "RWH"
-date: "`r format(Sys.time(), '%d %B %Y')`"
-
-output: 
-  html_document:
-    theme: readable 
-    highlight: pygments 
-    anchor_sections: FALSE
-
----
-
-```{r setup, include=FALSE}
-
-knitr::opts_chunk$set(
-  eval = FALSE,
-  echo = TRUE
-)
-  
-```
-
-
 # Overview of SLAMtrack
 
 # Set-up
