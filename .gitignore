@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 
+.Rprofile
 *.html
 figs/
 readme_private.Rmd
