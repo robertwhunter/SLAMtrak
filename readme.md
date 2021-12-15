@@ -1,8 +1,23 @@
-# Overview of SLAMtrack
+# SLAMtrack
 
-# Set-up
+## Overview  
 
-## Data inputs
+These `.Rmd` files are designed to analyse SLAMseq data from experiments tracking extracellular RNA (exRNA).  The input data can take the form of mRNA data (output from [slamdunk](https://t-neumann.github.io/slamdunk/) pipeline) or small RNA data (output from [smallSLAM](https://github.com/robertwhunter/smallSLAM) pipeline).  In an exRNA-tracking experiment, RNA is labelled in a cell or tissue of **origin**; labelled RNA is then sought in a **target** cell or tissue.  
+
+There are five markdown files:  
+
+- `1_QC` - basic data description / QC  
+- `2_mutations` \* - pairwise nucleotide conversion rates (i.e. not just T>C)  
+- `3_TC`- T>C conversion rates  
+- `4_labelled_genes` - identifying labelled genes  
+- `5_miniMAP` \* - looking for candidate genes  
+
+\* - currently only set up for slamdunk (NOT smallSLAM) data
+
+
+## Set-up
+
+### Data inputs
 
 A data directory containing three sub-directories:  
 
@@ -20,14 +35,13 @@ The `metadata.csv` file can have any desired user-determined fields, but must in
 The `exp_setup.txt` file contains a free-text description of the experimental design.  
 
 
-## Scripts
+### Scripts
 
 Need to set parameters in `SLAMtrack_00_setup.R`, e.g.:  
 
 ```{r example_parameters}
 
 # experimental descriptors
-exp_dir <- "slamdunk_210910"
 exp_tissue_origin <- "liver" 
 exp_tissue_target <- "kidney"
 exp_species <- "mouse"
@@ -48,6 +62,7 @@ Can add code to the following optional scripts:
 
 - `SLAMtrack_x1_repairnames.R` - to amend sample names in the slamdunk summary file  
 - `SLAMtrack_x2_factors.R` - to set factor order (e.g. for experimental groups)  
+
 
 Before running any of the .Rmd files, need to run the `SLAMtrack_10_import.R` script once.  
 

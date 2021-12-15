@@ -13,6 +13,7 @@ output:
 
 ```{r setup, include=FALSE}
 
+source(".Rprofile")
 source("scripts/SLAMtrack_00_setup.R")
 source("scripts/SLAMtrack_11_import_quick.R")
 
