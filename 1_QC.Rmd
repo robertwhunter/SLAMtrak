@@ -1,4 +1,8 @@
 ---
+params:
+  fname: "deafault"
+  exp_type: "slamdunk" # slamdunk or smallslam
+
 title: "SLAMtrack - overview"
 author: "RWH"
 date: "`r format(Sys.time(), '%d %B %Y')`"
@@ -21,9 +25,7 @@ knitr::opts_chunk$set(
   echo = FALSE, 
   error = TRUE, 
   message = FALSE,
-  fig.path = "figs/"
-# fig.path = paste0("figs/", params$fname, "/")
-# fig.path = paste0(dir_data, "output/")
+  fig.path = paste0(dir_data, "output/")
   )
 
 ```

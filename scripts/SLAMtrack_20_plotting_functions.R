@@ -17,7 +17,7 @@ plot_TABACO_grid_rates <- function(df_in) {
   ) %>% 
     ggplot(aes(colour = group, y = mutation_rate)) + 
     geom_boxplot(outlier.shape = NA) +
-    ylim(0, 0.006) +
+    coord_cartesian(ylim = c(0, 0.006)) +
     facet_grid(rows = vars(base_to), cols = vars(base_from)) +
     ylab("Mutation rate") +
     theme_SLAMtrack_horizontal() + 
