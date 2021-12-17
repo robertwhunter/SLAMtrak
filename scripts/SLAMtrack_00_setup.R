@@ -34,5 +34,3 @@ dir_scripts <- here("scripts")
 here(dir_scripts, "SLAMtrack_01_plotting_themes.R") %>% source()
 here(dir_scripts, "SLAMtrack_02_miscellaneous_functions.R") %>% source()
 here(dir_scripts, "SLAMtrack_20_plotting_functions.R") %>% source()
-
-if (params$exp_type == "slamdunk") {is_slamdunk <- TRUE} else {is_slamdunk <- FALSE}

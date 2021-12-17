@@ -6,6 +6,7 @@ render_SLAMtrack_single <- function(rmd, fname, exp_type, dir_data) {
                     output_file = fname,
                     params = list(
                       fname = fname,
+                      dir_data = dir_data,
                       exp_type = exp_type
                     ))
   
@@ -13,10 +14,20 @@ render_SLAMtrack_single <- function(rmd, fname, exp_type, dir_data) {
 
 render_SLAMtrack <- function(fname, exp_type) {
   
-  # dir_data_root defined in .Rprofle
-  dir_data <- here(dir_data_root, fname)
+  # dir_data defined in .Rprofie
+  dir_data <- paste0(dir_data_root, fname, "/")
   
   render_SLAMtrack_single("1_QC.Rmd", fname, exp_type, dir_data)
   render_SLAMtrack_single("3_TC.Rmd", fname, exp_type, dir_data)
+  
+}
+
+pre_render_SLAMtrack <- function(fname, exp_type) {
+  
+  # dir_data_root defined in .Rprofie
+  dir_data <- paste0(dir_data_root, fname, "/")
+  
+  if (exp_type == "slamdunk") source("scripts/SLAMtrack_10_import.R")
+  if (exp_type == "smallslam") source("scripts/SLAMtrack_10a_import_small.R")
   
 }

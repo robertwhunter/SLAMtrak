@@ -66,7 +66,7 @@ Can add code to the following optional scripts:
 
 Before running any of the .Rmd files, need to run the `SLAMtrack_10_import.R` script once.  
 
-Render all markdown files by calling `SLAMtrack_render.R`.  
+Render all markdown files by running `SLAMtrack_render.R` and calling `pre_render_SLAMtrak` then `render_SLAMtrak`.  
 
 
 ## Outputs

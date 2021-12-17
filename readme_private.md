@@ -1,5 +1,6 @@
 NEED TO MAKE SURE WE ARE ZOOMING INTO AXES CORRECTLY - i.e. cartesian-coords
 
+Add in gene labels to plot with ggrepel()
 
 Refine looking for labelled genes and the miniMAP analysis.  
 
