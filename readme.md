@@ -21,7 +21,7 @@ There are five markdown files:
 
 A data directory containing three sub-directories:  
 
-1) `slamdunk/` - standard output from slamdunk pipeline  
+1) `slamdunk/` or `Summary/` - standard output from slamdunk or smallslam pipeline respectively  
 2) `input/` - contanining `metadata.csv`, `all_cell_markers.txt` and `exp_setup.txt`
 3) `output/` - empty (will be filled by SLAMtrack outputs)  
 
@@ -64,13 +64,18 @@ Can add code to the following optional scripts:
 - `SLAMtrack_x2_factors.R` - to set factor order (e.g. for experimental groups)  
 
 
-Before running any of the .Rmd files, need to run the `SLAMtrack_10_import.R` script once.  
+## Workflow
 
-Render all markdown files by running `SLAMtrack_render.R` and calling `pre_render_SLAMtrak` then `render_SLAMtrak`.  
+1) ensure data, `input`, and `output` directories are correctly set up  
+2) edit parameters in `SLAMtrack_00_setup.R`  
+3) source `SLAMtrak_render.R` to load the rendering functions  
+4) call `pre_render_SLAMtrak(fname, exp_type)` to pull in raw data  
+5) call `render_SLAMtrak(fname, exp_type` to render the markdown documents  
+
+...where `fname` is the name of the data directory and `exp_type` is either "slamdunk" or "smallslam".  
 
 
 ## Outputs
 
 Intermediate .csv datafiles - to save time when re-importing data for analysis.  
-
 Html reports with figures as separate files.  

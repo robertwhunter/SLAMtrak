@@ -1,9 +1,7 @@
-library(here)
-
 render_SLAMtrack_single <- function(rmd, fname, exp_type, dir_data) {
   rmarkdown::render(rmd,
                     output_dir = paste0(dir_data, "output/"),
-                    output_file = fname,
+                    output_file = paste0(fname, "_", tools::file_path_sans_ext(rmd)),
                     params = list(
                       fname = fname,
                       dir_data = dir_data,
