@@ -1,4 +1,9 @@
 ---
+params:
+  fname: "default"
+  dir_data: "default"
+  exp_type: "slamdunk" # slamdunk or smallslam
+
 title: "SLAMtrack - mapping to targeted genes"
 author: "RWH"
 date: "`r format(Sys.time(), '%d %B %Y')`"
@@ -13,15 +18,20 @@ output:
 
 ```{r setup, include=FALSE}
 
+if (params$exp_type == "slamdunk") {is_slamdunk <- TRUE} else {is_slamdunk <- FALSE}
+dir_data <<- params$dir_data  ## <<- to make global variable
+exp_type <<- params$exp_type
+
+source(".Rprofile")
 source("scripts/SLAMtrack_00_setup.R")
 source("scripts/SLAMtrack_11_import_quick.R")
 source("scripts/SLAMtrack_12_import_miniMAP.R")
-
 
 knitr::opts_chunk$set(
   echo = FALSE, 
   error = TRUE, 
   message = FALSE
+  # fig.path = paste0(dir_data, "output/") - don't know why this not working
   )
   
 ```

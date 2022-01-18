@@ -15,16 +15,32 @@ render_SLAMtrack <- function(fname, exp_type) {
   # dir_data defined in .Rprofie
   dir_data <- paste0(dir_data_root, fname, "/")
   
-  render_SLAMtrack_single("1_QC.Rmd", fname, exp_type, dir_data)
-  render_SLAMtrack_single("3_TC.Rmd", fname, exp_type, dir_data)
+  if (exp_type == "slamdunk") {
+  
+    render_SLAMtrack_single("1_QC.Rmd", fname, exp_type, dir_data)
+    render_SLAMtrack_single("2_mutations.Rmd", fname, exp_type, dir_data)
+    render_SLAMtrack_single("3_TC.Rmd", fname, exp_type, dir_data)
+    render_SLAMtrack_single("4_labelled_genes.Rmd", fname, exp_type, dir_data)
+    render_SLAMtrack_single("5_miniMAP.Rmd", fname, exp_type, dir_data)
+    
+  }
+  
+  if (exp_type == "smallslam") {
+    
+    render_SLAMtrack_single("1_QC.Rmd", fname, exp_type, dir_data)
+    render_SLAMtrack_single("3_TC.Rmd", fname, exp_type, dir_data)
+    render_SLAMtrack_single("4_labelled_genes.Rmd", fname, exp_type, dir_data)
+
+  }
   
 }
 
 pre_render_SLAMtrack <- function(fname, exp_type) {
   
   # dir_data_root defined in .Rprofie
-  dir_data <- paste0(dir_data_root, fname, "/")
+  dir_data <<- paste0(dir_data_root, fname, "/") # <<- to assign as global variable
   
+  source("scripts/SLAMtrack_00_setup.R")
   if (exp_type == "slamdunk") source("scripts/SLAMtrack_10_import.R")
   if (exp_type == "smallslam") source("scripts/SLAMtrack_10a_import_small.R")
   

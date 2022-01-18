@@ -1,4 +1,9 @@
 ---
+params:
+  fname: "default"
+  dir_data: "default"
+  exp_type: "slamdunk" # slamdunk or smallslam
+  
 title: "SLAMtrack - mutation rates"
 author: "RWH"
 date: "`r format(Sys.time(), '%d %B %Y')`"
@@ -13,17 +18,20 @@ output:
 
 ```{r setup, include=FALSE}
 
+if (params$exp_type == "slamdunk") {is_slamdunk <- TRUE} else {is_slamdunk <- FALSE}
+dir_data <<- params$dir_data  ## <<- to make global variable
+exp_type <<- params$exp_type
+
+source(".Rprofile")
 source("scripts/SLAMtrack_00_setup.R")
 source("scripts/SLAMtrack_11_import_quick.R")
 
 knitr::opts_chunk$set(
   echo = FALSE, 
   error = TRUE, 
-  message = FALSE,
-  warning = TRUE
+  message = FALSE
+  # fig.path = paste0(dir_data, "output/") - don't know why this not working
   )
-
-# fig.path = here(dir_active, "output/"
 
 ```
 
@@ -35,7 +43,7 @@ All reads over a threshold read count of `r mutations_threshold_readcount` analy
 
 ## Mutation rates in the tissue of origin
 
-```{r mutations_tissue_origin}
+```{r mutations_tissue_origin, eval=is_slamdunk}
 
 df_meta_short %>% 
   left_join(df_mutations_L) %>% 
@@ -55,20 +63,20 @@ df_meta_short %>%
 
 ## Mutation rates in the target tissue
 
-```{r mutations_tissue_target}
+```{r mutations_tissue_target, eval=is_slamdunk}
 
 df_meta_short %>% 
   left_join(df_mutations_L) %>% 
   filter(tissue == exp_tissue_target) %>% 
   reshape_mutations_for_TABACO(plot_strand = "+") %>% 
-  plot_TABACO_grid_rates() +
+  plot_TABACO_grid_rates_zoom(0.003) +
   ggtitle(paste("Mutation rates in", exp_tissue_target, "\non the +ve strand"))
 
 df_meta_short %>% 
   left_join(df_mutations_L) %>% 
   filter(tissue == exp_tissue_target) %>% 
   reshape_mutations_for_TABACO(plot_strand = "-") %>% 
-  plot_TABACO_grid_rates() +
+  plot_TABACO_grid_rates_zoom(0.003) +
   ggtitle(paste("Mutation rates in", exp_tissue_target, "\non the -ve strand"))
 
 ```

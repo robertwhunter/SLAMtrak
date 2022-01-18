@@ -17,7 +17,21 @@ plot_TABACO_grid_rates <- function(df_in) {
   ) %>% 
     ggplot(aes(colour = group, y = mutation_rate)) + 
     geom_boxplot(outlier.shape = NA) +
-    coord_cartesian(ylim = c(0, 0.006)) +
+    facet_grid(rows = vars(base_to), cols = vars(base_from)) +
+    ylab("Mutation rate") +
+    theme_SLAMtrack_horizontal() + 
+    theme(axis.text.x = element_blank()) +
+    sc_SLAMtrack_groups
+}
+
+plot_TABACO_grid_rates_zoom <- function(df_in, zoom) {
+  df_in %>% mutate(
+    base_from = paste0(base_from,">"),
+    base_to = paste0(">",base_to)
+  ) %>% 
+    ggplot(aes(colour = group, y = mutation_rate)) + 
+    geom_boxplot(outlier.shape = NA) +
+    coord_cartesian(ylim = c(0, zoom)) +
     facet_grid(rows = vars(base_to), cols = vars(base_from)) +
     ylab("Mutation rate") +
     theme_SLAMtrack_horizontal() + 
@@ -102,17 +116,7 @@ plot_markers_points_delta <- function(df_plot, cpm_threshold = 10, delta_thresho
     ggplot(aes(x = cell, y = delta, size = mean_CPM)) +
     # geom_boxplot(colour = "pink") +
     geom_jitter(alpha = 0.3, width = 0.1) +
-    coord_flip() +
-    theme_SLAMtrack()
-}
-
-plot_markers_ridges_delta <- function(df_plot, cpm_threshold = 10, delta_threshold = 1) {
-  df_plot %>% 
-    filter(abs(delta) < delta_threshold) %>% 
-    filter(mean_CPM >= cpm_threshold) %>% 
-    ggplot(aes(x = cell, y = delta)) +
-    # geom_boxplot(colour = "pink") +
-    geom_density_ridges() +
+    geom_hline(yintercept = 0, colour = "Red", linetype = 2) +
     coord_flip() +
     theme_SLAMtrack()
 }

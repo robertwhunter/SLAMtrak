@@ -1,8 +1,34 @@
-NEED TO MAKE SURE WE ARE ZOOMING INTO AXES CORRECTLY - i.e. cartesian-coords
+# README - PRIVATE NOTES (SLAMtrack)
 
-Add in gene labels to plot with ggrepel()
+## Next step
 
-Refine looking for labelled genes and the miniMAP analysis.  
+1) look within two sets of genes:
+- genes well-labelled in liver
+- genes not labelled in liver (but present in kidney)
+
+2) look for primary transcript (miR-122)
+
+2a) 4TU effect on gene expression?  
+
+3) write paper (& CoRE application) - use miR-122 as exemplar - eLife? NatComms
+
+4) paracetamol injury model and look in spleen too (and AAV8 null vector as control) - all male; probably FACS-sort tubules as well as bulk tissue: 4 groups (+- Cre; +- APAP) - for mRNA and smallRNA
+
+5) ASN? (April)
+
+
+## Priority:
+
+- check and update README files (for smallSLAM and slamtrack)  
+- add in filename to headers in Rmd files  
+- add in candidate gene analysis (e.g. for miR-122 vs. other miRs)  
+- add in gene labels to plot with ggrepel()  
+- add in bespoke chunks for smallRNA analysis - e.g. TC by biotype  
+- add in some basic table descriptors of library structure - e.g. no. of genes / rpm / parents per gene etc. - probably better in smallSLAM analysis Rmd?  
+- add back PCA / dendrograms  
+
+
+## To refine looking for labelled genes and the miniMAP analysis:  
 
 In labelled genes:
 - sort out problem with renaming group factors  

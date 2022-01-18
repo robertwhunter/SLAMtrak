@@ -1,7 +1,7 @@
 ## IMPORT META-DATA AND SUMMARY FILES ----
 
-df_meta <- here(dir_active, "input", "metadata.csv") %>% read_csv()
-df_files <- here(dir_active, "slamdunk", "summary") %>% read_tsv(skip = 1)
+df_meta <- here(dir_data, "input", "metadata.csv") %>% read_csv()
+df_files <- here(dir_data, "slamdunk", "summary") %>% read_tsv(skip = 1)
 
 # repair names for this instance only
 here(dir_scripts, "SLAMtrack_x1_repairnames.R") %>% source()
@@ -32,16 +32,16 @@ colnames(df_QC) <- tolower(colnames(df_QC))
 
 #### READ IN MULTQC DATA ----
 
-# here(dir_active, "slamdunk", "multiqc_data", "multiqc_data.json") %>% fromJSON() -> QC_slamdunk
-# here(dir_active, "slamdunk", "multiqc_data", "multiqc_general_stats.txt") %>% read_tsv() -> df_QC
+# here(dir_data, "slamdunk", "multiqc_data", "multiqc_data.json") %>% fromJSON() -> QC_slamdunk
+# here(dir_data, "slamdunk", "multiqc_data", "multiqc_general_stats.txt") %>% read_tsv() -> df_QC
 
 
 ## IMPORT TCOUNTS ----
 
-here(dir_active, "slamdunk", "count") %>% 
+here(dir_data, "slamdunk", "count") %>% 
   list.files(pattern = "_mapped_filtered_tcount_collapsed.csv", full.names = TRUE) -> f
 
-here(dir_active, "slamdunk", "count") %>%
+here(dir_data, "slamdunk", "count") %>%
   list.files(pattern = "_mapped_filtered_tcount_collapsed.csv", full.names = FALSE) %>%
   gsub("_.fastq_slamdunk_mapped_filtered_tcount_collapsed.csv", "", .) -> fs
 
@@ -63,10 +63,10 @@ df_tcounts <- df_tcounts %>% filter(readsCPM > 0)
 
 # read in MUTATIONS mapped to UTRs
 
-here(dir_active, "slamdunk", "stats") %>% 
+here(dir_data, "slamdunk", "stats") %>% 
   list.files(pattern = "_mapped_filtered_mutationrates_utr.csv", full.names = TRUE) -> f
 
-here(dir_active, "slamdunk", "stats") %>%
+here(dir_data, "slamdunk", "stats") %>%
   list.files(pattern = "_mapped_filtered_mutationrates_utr.csv", full.names = FALSE) %>%
   gsub("_.fastq_slamdunk_mapped_filtered_mutationrates_utr.csv", "", .) -> fs
 
@@ -117,7 +117,7 @@ df_mutations_L$mutation <- df_mutations_L$mutation %>% gsub("_", ">", .) %>% as.
 # http://biocc.hrbmu.edu.cn/CellMarker/index.jsp
 # http://biocc.hrbmu.edu.cn/CellMarker/download/Mouse_cell_markers.txt
 
-df_marker_full <- here(dir_active, "input", "all_cell_markers.txt") %>% read_tsv
+df_marker_full <- here(dir_data, "input", "all_cell_markers.txt") %>% read_tsv
 
 df_marker_full %>% 
   filter(
@@ -145,10 +145,10 @@ df_marker_full %>%
 
 ## WRITE-OUT ----
   
-df_meta %>% write_csv(here(dir_active, "output", "meta.csv"))
-df_meta_short %>% write_csv(here(dir_active, "output", "meta_short.csv"))
-df_QC %>% write_csv(here(dir_active, "output", "QC.csv"))
-df_tcounts %>% write_csv(here(dir_active, "output", "tcounts.csv"))
-df_mutations_L %>% write_csv(here(dir_active, "output", "mutations_L.csv"))
-df_marker_origin %>% write_csv(here(dir_active, "output", "markers_origin.csv"))
-df_marker_target %>% write_csv(here(dir_active, "output", "markers_target.csv"))
+df_meta %>% write_csv(here(dir_data, "output", "meta.csv"))
+df_meta_short %>% write_csv(here(dir_data, "output", "meta_short.csv"))
+df_QC %>% write_csv(here(dir_data, "output", "QC.csv"))
+df_tcounts %>% write_csv(here(dir_data, "output", "tcounts.csv"))
+df_mutations_L %>% write_csv(here(dir_data, "output", "mutations_L.csv"))
+df_marker_origin %>% write_csv(here(dir_data, "output", "markers_origin.csv"))
+df_marker_target %>% write_csv(here(dir_data, "output", "markers_target.csv"))

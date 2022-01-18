@@ -33,6 +33,8 @@ knitr::opts_chunk$set(
   # fig.path = paste0(dir_data, "output/") - don't know why this not working
   )
 
+library(kableExtra)
+
 ```
 
 
@@ -90,8 +92,6 @@ df_tcounts %>%
 
 p %>% add_theme_SLAMtrack() %>% remove_guide_fill()
 
-# REMOVE THIS LINE - A TEMPORARY FIX TO GENERATE FIGS WITH WIDTH = 3; HEIGHT = 2
-# q + theme(axis.title = element_text(size = 10), legend.text = element_text(size = 8), legend.title = element_text(size = 10))
 
 df_tcounts %>% 
   mutate(conversionRate = conversionRate + cR_nudge) %>% 
@@ -108,11 +108,33 @@ p %>% add_theme_SLAMtrack()
 
 # T>C conversion rates in known marker genes
 
+The marker genes within `r exp_tissue_origin` are:  
+
+```{r marker_genes_origin_table}
+
+df_marker_origin %>% kable() %>% kable_styling() %>% scroll_box(width = "100%", height = "400px")
+
+```
+
+<br>
+<br>
+
+The marker genes within `r exp_tissue_target` are:  
+
+```{r marker_genes_target_table}
+
+df_marker_target %>% kable() %>% kable_styling() %>% scroll_box(width = "100%", height = "400px")
+
+```
+
+<br>
+<br>
+
 ## Within the tissue of origin
 
 Known marker genes within `r exp_tissue_origin`:  
 
-```{r TC_marker_genes_origin, eval=is_slamdunk}
+```{r TC_marker_genes_origin}
 
 df_tcounts %>% 
   filter(tissue == exp_tissue_origin) %>%
@@ -126,11 +148,12 @@ df_tcounts %>%
 
 ```
 
+
 ## Within the target tissue
 
 Known marker genes within `r exp_tissue_target`:  
 
-```{r TC_marker_genes_target, eval=is_slamdunk}
+```{r TC_marker_genes_target}
 
 df_tcounts %>% 
   filter(tissue == exp_tissue_target) %>% 
@@ -147,7 +170,7 @@ df_tcounts %>%
 
 Known marker genes from `r exp_tissue_origin` within `r exp_tissue_target`:  
 
-```{r TC_marker_genes_target_origin, eval=is_slamdunk}
+```{r TC_marker_genes_target_origin}
 
 df_tcounts %>% 
   filter(tissue == exp_tissue_target) %>% 

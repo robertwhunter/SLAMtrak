@@ -11,6 +11,12 @@ if (exp_type == "slamdunk") {
   df_marker_target <- read_csv(here(dir_data, "output", "markers_target.csv"))
 }
 
+if (exp_type == "smallslam") {
+  df_marker_origin <- read_csv(here(dir_data, "output", "markers_origin_small.csv"))
+  df_marker_target <- read_csv(here(dir_data, "output", "markers_target_small.csv"))
+}
+
+
 ## FACTORS ----
 
 df_tcounts$tissue %>% 

@@ -70,7 +70,7 @@ Can add code to the following optional scripts:
 2) edit parameters in `SLAMtrack_00_setup.R`  
 3) source `SLAMtrak_render.R` to load the rendering functions  
 4) call `pre_render_SLAMtrak(fname, exp_type)` to pull in raw data  
-5) call `render_SLAMtrak(fname, exp_type` to render the markdown documents  
+5) call `render_SLAMtrak(fname, exp_type)` to render the markdown documents  
 
 ...where `fname` is the name of the data directory and `exp_type` is either "slamdunk" or "smallslam".  
 

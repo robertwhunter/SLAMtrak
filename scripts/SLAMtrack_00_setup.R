@@ -5,9 +5,9 @@ exp_tissue_origin <- "liver"
 exp_tissue_target <- "kidney"
 exp_species <- "mouse"
 
-baseline_group <- "4TUneg"            # baseline control group (often 4TU-negative)
-pos_group <- "crepos"                 # positive experimental group
-neg_group <- "creneg"                 # negative control group in delta-TC analysis (often Cre-negative)
+baseline_group <- "control group (4TU -ve)"            # baseline control group (often 4TU-negative)
+pos_group <- "RNA labelling group"                     # positive experimental group
+neg_group <- "control group (Cre -ve)"                 # negative control group in delta-TC analysis (often Cre-negative)
 
 
 # analysis parameters
