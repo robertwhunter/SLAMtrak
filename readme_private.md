@@ -4,7 +4,7 @@
 
 1) look within two sets of genes:
 - genes well-labelled in liver
-- genes not labelled in liver (but present in kidney)
+- genes not labelled in liver (but present in kidney) ------> DONE
 
 2) look for primary transcript (miR-122)
 

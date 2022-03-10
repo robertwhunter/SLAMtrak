@@ -1,8 +1,8 @@
 ---
 params:
-  fname: "default"
-  dir_data: "default"
-  exp_type: "slamdunk" # slamdunk or smallslam
+ fname: "default"
+ dir_data: "default"
+ exp_type: "slamdunk" # slamdunk or smallslam
 
 title: "SLAMtrack - Labelled genes"
 author: "RWH"
@@ -307,6 +307,135 @@ df_tcounts_labelled_cut %>%
 p %>% add_theme_SLAMtrack()
 
 ```
+
+
+We can then write lists of the genes with `r exp_tissue_target` that are:
+
+- present and ALWAYS labelled within `r exp_tissue_origin` 
+- present and SOMETIMES labelled within `r exp_tissue_origin` 
+- present and NEVER labelled within `r exp_tissue_origin` 
+- NOT present within `r exp_tissue_origin`
+
+...and then compare labelling rates within these groups.  
+
+
+```{r classify_genes_in_target}
+
+df_tcounts_origin %>% 
+  filter(readsCPM > 0) %>% 
+  group_by(gene_name, group) %>% 
+  summarise(
+    n_labelled = sum(labelled == "labelled"),
+    n_unlabelled = sum(labelled == "not labelled")
+  ) %>% 
+  mutate(
+    n = n_labelled + n_unlabelled,
+    classification = case_when(
+      n == n_labelled ~ "always",
+      n == n_unlabelled ~ "never"
+    )
+  ) %>% 
+  select(gene_name, group, classification) %>% 
+  pivot_wider(names_from = group, values_from = classification) -> df_labelling_in_origin
+  
+df_labelling_in_origin %>% 
+  mutate(
+    labelling_in_origin = case_when(
+      !!as.name(pos_group) == "always" & !!as.name(neg_group) == "never" ~ "robust positive",
+      !!as.name(pos_group) == "never" ~ "robust negative",
+      !!as.name(neg_group) != "never" ~ "leaky"
+    )) %>% 
+  select(gene_name, labelling_in_origin) -> df_labelling_in_origin_summary
+
+df_labelling_in_origin_summary$labelling_in_origin %>% 
+  NA_sub_x(paste0("not classified in ", exp_tissue_origin)) ->
+  df_labelling_in_origin_summary$labelling_in_origin
+
+df_tcounts_target %>% 
+  left_join(df_labelling_in_origin_summary, by = c("gene_name")) -> df_tcounts_target
+
+df_tcounts_target$labelling_in_origin %>% 
+  NA_sub_x(paste0("not present in ", exp_tissue_origin)) %>% 
+  fct_relevel(
+    "robust positive", 
+    "robust negative", 
+    "leaky"
+    ) -> df_tcounts_target$labelling_in_origin
+
+
+```
+
+
+The number of genes in each category is:  
+
+```{r show_genes_in_target}
+
+new_name = paste0("labelling in ", exp_tissue_origin)
+
+colnames(df_tcounts_target)[which(colnames(df_tcounts_target) == "labelling_in_origin")] <- new_name
+
+df_tcounts_target %>% 
+  group_by(sample_name, !!as.name(new_name)) %>% 
+  summarise(n = length(gene_name)) %>% 
+    group_by(!!as.name(new_name)) %>% 
+    summarise(
+      median = median(n),
+      Q1 = quantile(n, 0.25),
+      Q3 = quantile(n, 0.75)
+    ) %>% knitr::kable(caption = paste0("number of genes in each category within each ", exp_tissue_target, " library"))
+
+```
+
+
+Does rate of T>C conversion differ between these groups?
+
+```{r plot_genes_in_target_by_category}
+
+df_tcounts_target %>% 
+  mutate(
+    conversionRate = conversionRate + cR_nudge
+  ) %>% 
+    ggplot(aes(y = 1, x = conversionRate, colour = group)) +
+    geom_density_ridges(fill = NA) +
+    scale_x_log10() +
+    facet_wrap(as.formula(paste0("~ ", "`", new_name, "`"))) +
+    xlab("T>C conversion rate") +
+    ylab("") +
+    ggtitle(paste0(
+      "conversion rates in ", 
+      exp_tissue_target, 
+      "\n(stratified by labelling status of gene in ",
+      exp_tissue_origin,
+      ")"
+    )) -> p
+
+p <- p %>% add_theme_SLAMtrack()
+p + theme_smaller()
+
+df_tcounts_target %>% 
+  filter(group %in% c(pos_group, neg_group)) %>% 
+  mutate(
+    conversionRate = conversionRate + cR_nudge
+  ) %>% 
+    ggplot(aes(y = 1, x = conversionRate, colour = group)) +
+    geom_density_ridges(fill = NA) +
+    scale_x_log10() +
+    facet_wrap(as.formula(paste0("~ ", "`", new_name, "`")))  +
+    xlab("T>C conversion rate") +
+    ylab("") +
+    ggtitle(paste0(
+      "conversion rates in ", 
+      exp_tissue_target, 
+      "\n(stratified by labelling status of gene in ",
+      exp_tissue_origin,
+      ")"
+    )) -> q
+
+q <- q %>% add_theme_SLAMtrack()
+q + theme_smaller()
+
+```
+
 
 
 # Approach 2 = gene-wise delta T>C conversion rate
