@@ -5,6 +5,7 @@ params:
   exp_type: "slamdunk" # slamdunk or smallslam
 
 title: "SLAMtrack - overview"
+subtitle: "`r params$fname`"
 author: "RWH"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 
@@ -33,6 +34,8 @@ knitr::opts_chunk$set(
   # fig.path = paste0(dir_data, "output/") - don't know why this not working
   )
 
+pic_path <- here(dir_data, "input", "exp_setup.png") %>% gsub("//", "/", .)
+
 ```
 
 
@@ -40,9 +43,11 @@ knitr::opts_chunk$set(
 
 ```{r experimental_description, child=here(dir_data, "input", "exp_setup.txt"), warning=FALSE}
 
-#here(dir_active, "input", "exp_setup.txt") %>% read_file() %>% print()
+#here(dir_data, "input", "exp_setup.txt") %>% read_file() %>% print()
 
 ```
+
+<!-- ![](`r pic_path`) -->
 
 
 ## Sample meta-data

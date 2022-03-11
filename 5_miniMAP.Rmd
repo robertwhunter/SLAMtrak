@@ -5,6 +5,7 @@ params:
   exp_type: "slamdunk" # slamdunk or smallslam
 
 title: "SLAMtrack - mapping to targeted genes"
+subtitle: "`r params$fname`"
 author: "RWH"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 

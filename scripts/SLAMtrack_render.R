@@ -48,15 +48,20 @@ pre_render_SLAMtrack <- function(fname, exp_type) {
 }
 
 
-render_all_SLAMtrack <- function() {
+render_all_SLAMtrack <- function(pre_render = FALSE) {
   
   dir_list <- list.dirs(dir_data_root, full.names = FALSE, recursive = FALSE)
   dir_list_slamdunk <- dir_list[grep("slamdunk", dir_list)]
   dir_list_smallslam <- dir_list[grep("smallslam", dir_list)]
   
-  for (i in 1:length(dir_list_slamdunk)) pre_render_SLAMtrack(dir_list_slamdunk[i], "slamdunk")
+  if (pre_render == TRUE) {
+    
+    for (i in 1:length(dir_list_slamdunk)) pre_render_SLAMtrack(dir_list_slamdunk[i], "slamdunk")
+    for (i in 1:length(dir_list_smallslam)) pre_render_SLAMtrack(dir_list_smallslam[i], "smallslam")
+    
+  }
+  
   for (i in 1:length(dir_list_slamdunk)) render_SLAMtrack(dir_list_slamdunk[i], "slamdunk")
-  for (i in 1:length(dir_list_smallslam)) pre_render_SLAMtrack(dir_list_smallslam[i], "smallslam")
   for (i in 1:length(dir_list_smallslam)) render_SLAMtrack(dir_list_smallslam[i], "smallslam")
   
 }

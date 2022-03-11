@@ -1,6 +1,9 @@
 # experimental descriptors
 exp_tissue_origin <- "liver" 
 exp_tissue_target <- "kidney"
+exp_tissue_origin_organ <- "liver"
+exp_tissue_target_organ <- "kidney"
+
 exp_species <- "mouse"
 
 baseline_group <- "control group (4TU -ve)"            # baseline control group (often 4TU-negative)

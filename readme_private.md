@@ -3,8 +3,6 @@
 ## Writing the paper
 
 - add back in PCA plots (+/- DEA) ---> defer?  
-- add in Run1_slamdunk
-- rename Run1 - if not all folders  
 - run all existing data through SLAMtrack pipeline   
 - make figures  
 - write paper  
@@ -35,7 +33,7 @@
 ## Priority:
 
 - check and update README files (for smallSLAM and slamtrack)  
-- add in filename to headers in Rmd files  
+- get the exp_setup.png bit working in QC Rmd
 - add in candidate gene analysis (e.g. for miR-122 vs. other miRs)  
 - add in gene labels to plot with ggrepel()  
 - add in bespoke chunks for smallRNA analysis - e.g. TC by biotype  

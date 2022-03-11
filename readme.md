@@ -22,8 +22,9 @@ There are five markdown files:
 A data directory containing three sub-directories:  
 
 1) `slamdunk/` or `Summary/` - standard output from slamdunk or smallslam pipeline respectively  
-2) `input/` - containing `metadata.csv`, `all_cell_markers.txt`, `exp_setup.txt` and bespoke Rscripts
+2) `input/` - containing `metadata.csv`, `all_cell_markers.txt`, `exp_setup.txt`, `exp_setup.png` and bespoke Rscripts
 3) `output/` - empty (will be filled by SLAMtrack outputs)  
+
 
 The `metadata.csv` file can have any desired user-determined fields, but must include:  
 
@@ -31,8 +32,8 @@ The `metadata.csv` file can have any desired user-determined fields, but must in
 - `group`  
 - `tissue`  
 
-
 The `exp_setup.txt` file contains a free-text description of the experimental design.  
+The `exp_setup.png` file contains a picture of the experimental design.  
 
 
 The bespoke R scripts are:  
@@ -49,6 +50,9 @@ Need to set parameters in `SLAMtrack_x0_parameters.R`, e.g.:
 # experimental descriptors
 exp_tissue_origin <- "liver" 
 exp_tissue_target <- "kidney"
+exp_tissue_origin_organ <- "liver"
+exp_tissue_target_organ <- "kidney"
+
 exp_species <- "mouse"
 
 baseline_group <- "4TUneg"            # baseline control group (often 4TU-negative)

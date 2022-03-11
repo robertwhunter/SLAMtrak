@@ -10,7 +10,8 @@ df_files %>%
   mutate(
     library = FileName %>% 
       sub('.*/', '', .) %>% 
-      gsub("_.fastq_slamdunk_mapped_filtered.bam", "", .)
+      gsub("_.f*q_slamdunk_mapped_filtered.bam", "", .) %>% 
+      gsub("_trimmed.f*q_slamdunk_mapped_filtered.bam", "", .) 
   ) -> df_files
 
 df_files %>% 
@@ -43,11 +44,11 @@ here(dir_data, "slamdunk", "count") %>%
 
 here(dir_data, "slamdunk", "count") %>%
   list.files(pattern = "_mapped_filtered_tcount_collapsed.csv", full.names = FALSE) %>%
-  gsub("_.fastq_slamdunk_mapped_filtered_tcount_collapsed.csv", "", .) -> fs
+  gsub("_.fq_slamdunk_mapped_filtered_tcount_collapsed.csv", "", .) %>% 
+  gsub("_trimmed.fq_slamdunk_mapped_filtered_tcount_collapsed.csv", "", .) -> fs
 
 fn_lookup <- data.frame("source" = 1:length(f), "library" = fs)
 fn_lookup$source <- fn_lookup$source %>% as.character()
-
 
 f %>% 
   map_dfr(read_delim, delim="\t", .id = "source") %>% 
@@ -68,7 +69,8 @@ here(dir_data, "slamdunk", "stats") %>%
 
 here(dir_data, "slamdunk", "stats") %>%
   list.files(pattern = "_mapped_filtered_mutationrates_utr.csv", full.names = FALSE) %>%
-  gsub("_.fastq_slamdunk_mapped_filtered_mutationrates_utr.csv", "", .) -> fs
+  gsub("_.f*q_slamdunk_mapped_filtered_mutationrates_utr.csv", "", .) %>% 
+  gsub("_trimmed.f*q_slamdunk_mapped_filtered_mutationrates_utr.csv", "", .) -> fs
 
 fn_lookup <- data.frame("source" = 1:length(f), "library" = fs)
 fn_lookup$source <- fn_lookup$source %>% as.character()
@@ -123,7 +125,7 @@ df_marker_full %>%
   filter(
     tolower(speciesType) == exp_species,
     cellType == "Normal cell",
-    tolower(tissueType) %in% c(exp_tissue_origin, exp_tissue_target)) %>% 
+    tolower(tissueType) %in% c(exp_tissue_origin_organ, exp_tissue_target_organ)) %>% 
   select(
     tissue = tissueType,
     cell = cellName,
@@ -138,8 +140,8 @@ df_marker_full %>%
   df_marker$cell %>% as.factor() -> df_marker$cell
   df_marker %>% unique() %>% drop_na() %>% filter(gene != "NA") -> df_marker
   
-  df_marker %>% filter(tolower(tissue) == exp_tissue_origin) -> df_marker_origin
-  df_marker %>% filter(tolower(tissue) == exp_tissue_target) -> df_marker_target
+  df_marker %>% filter(tolower(tissue) == exp_tissue_origin_organ) -> df_marker_origin
+  df_marker %>% filter(tolower(tissue) == exp_tissue_target_organ) -> df_marker_target
   
   
 
