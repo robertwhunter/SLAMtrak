@@ -2,15 +2,17 @@
 
 ## Writing the paper
 
-- add back in PCA plots (+/- DEA) ---> defer?  
-- run all existing data through SLAMtrack pipeline   
+- idenfity "robustly labelled" genes using delta method  
+
+- add back in PCA plots (+/- DEA) as 1a_DEA.Rmd ---> DEFER  
+- re-run all existing data through SLAMtrack pipeline
 - make figures  
 - write paper  
 
 - AAV8 mRNA > exemplar working well
-- podo > also works but less well
+- podo mRNA > also works but less well
 - AAV8 miRNA > can label miRNA but at limit of detection for transfer?  
-- podo miRNA > can we label?  
+- podo miRNA > can we label - yes!
 
 
 ## Next steps
@@ -19,7 +21,7 @@
 - genes well-labelled in liver
 - genes not labelled in liver (but present in kidney) ------> DONE
 
-2) 4TU effect on gene expression? - need PCA plots   
+2) 4TU effect on gene expression? - need PCA plots +/- DEA  
 
 3) look for primary transcript (miR-122)
 
@@ -30,9 +32,8 @@
 6) ASN? (April)
 
 
-## Priority:
+## Not urgent:
 
-- check and update README files (for smallSLAM and slamtrack)  
 - get the exp_setup.png bit working in QC Rmd
 - add in candidate gene analysis (e.g. for miR-122 vs. other miRs)  
 - add in gene labels to plot with ggrepel()  
