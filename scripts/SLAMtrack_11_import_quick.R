@@ -19,8 +19,19 @@ if (exp_type == "smallslam") {
 
 ## FACTORS ----
 
-df_tcounts$tissue %>% 
-  as.factor() %>% 
-  fct_relevel(exp_tissue_origin, exp_tissue_target) -> df_tcounts$tissue
+if (exp_tissue_origin != exp_tissue_target) {
+
+  df_tcounts$tissue %>% 
+    as.factor() %>% 
+    fct_relevel(exp_tissue_origin, exp_tissue_target) -> df_tcounts$tissue
+  
+} 
+
+if (exp_tissue_origin == exp_tissue_target) {
+  
+  df_tcounts$tissue %>% 
+    as.factor() -> df_tcounts$tissue
+  
+}
 
 here(dir_data, "input", "SLAMtrack_x2_factors.R") %>% source()

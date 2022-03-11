@@ -35,29 +35,41 @@ df_tcounts <- df_tcounts %>% filter(readsCPM > 0)
 # https://www.pnas.org/content/117/41/25634
 # https://www.pnas.org/highwire/filestream/951687/field_highwire_adjunct_files/4/pnas.2002277117.sd04.xlsx # Dataset S04
 
-dir_data <- "~/OneDrive - University of Edinburgh/R files/Labdata - RNAseq/Data/Liver-kidney_smallslam"
 
 df_marker_small <- here(dir_data, "input", "cell_markers_miRNA.csv") %>% read_csv
 
 restriction_threshold <- 100
 
 df_marker_small %>% 
-  filter(tolower(Tissue) %in% c(exp_tissue_origin, exp_tissue_target)) %>% 
+  filter(tolower(Tissue) %in% c(exp_tissue_origin_organ, exp_tissue_target_organ)) %>% 
   select(-Arm, -Gene) %>% 
   drop_na() %>% 
   pivot_wider(names_from = Tissue, values_from = Expression) -> df_marker_small_wide
 
-df_marker_small_wide %>% 
-  mutate(
-    ratio = .[[2]] / .[[3]],
-    tissue = case_when(
-      ratio > 1 ~ colnames(df_marker_small_wide)[2],
-      ratio < 1 ~ colnames(df_marker_small_wide)[3]
-    ),
-    restricted = case_when(
-      ratio < 1/restriction_threshold | ratio > restriction_threshold ~ TRUE
-    )) %>% 
-  filter(restricted == TRUE) -> df_marker_small_restricted
+if (exp_tissue_origin_organ != exp_tissue_target_organ) {
+
+  df_marker_small_wide %>% 
+    mutate(
+      ratio = .[[2]] / .[[3]],
+      tissue = case_when(
+        ratio > 1 ~ colnames(df_marker_small_wide)[2],
+        ratio < 1 ~ colnames(df_marker_small_wide)[3]
+      ),
+      restricted = case_when(
+        ratio < 1/restriction_threshold | ratio > restriction_threshold ~ TRUE
+      )) %>% 
+    filter(restricted == TRUE) -> df_marker_small_restricted
+  
+}
+
+if (exp_tissue_origin_organ == exp_tissue_target_organ) {
+
+  df_marker_small_wide %>% 
+    mutate(
+      tissue = exp_tissue_origin_organ
+    ) %>% 
+    filter(.[[2]] > 0.1) -> df_marker_small_restricted
+}
 
 df_marker_small_restricted %>% 
   mutate(
@@ -67,11 +79,11 @@ df_marker_small_restricted %>%
   ) -> df_marker_small_restricted
 
 df_marker_small_restricted %>% 
-  filter(tissue == exp_tissue_origin) %>% 
+  filter(tissue == tolower(exp_tissue_origin_organ)) %>% 
   select(tissue, cell, gene) -> df_marker_origin_small
 
 df_marker_small_restricted %>% 
-  filter(tissue == exp_tissue_target) %>% 
+  filter(tissue == tolower(exp_tissue_target_organ)) %>% 
   select(tissue, cell, gene) -> df_marker_target_small
 
 
