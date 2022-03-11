@@ -4,7 +4,7 @@ df_meta <- here(dir_data, "input", "metadata.csv") %>% read_csv()
 df_files <- here(dir_data, "slamdunk", "summary") %>% read_tsv(skip = 1)
 
 # repair names for this instance only
-here(dir_scripts, "SLAMtrack_x1_repairnames.R") %>% source()
+here(dir_data, "input", "SLAMtrack_x1_repairnames.R") %>% source()
 
 df_files %>% 
   mutate(

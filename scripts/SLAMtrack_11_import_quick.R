@@ -23,4 +23,4 @@ df_tcounts$tissue %>%
   as.factor() %>% 
   fct_relevel(exp_tissue_origin, exp_tissue_target) -> df_tcounts$tissue
 
-here(dir_scripts, "SLAMtrack_x2_factors.R") %>% source()
+here(dir_data, "input", "SLAMtrack_x2_factors.R") %>% source()

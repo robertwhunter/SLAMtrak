@@ -22,7 +22,7 @@ There are five markdown files:
 A data directory containing three sub-directories:  
 
 1) `slamdunk/` or `Summary/` - standard output from slamdunk or smallslam pipeline respectively  
-2) `input/` - contanining `metadata.csv`, `all_cell_markers.txt` and `exp_setup.txt`
+2) `input/` - containing `metadata.csv`, `all_cell_markers.txt`, `exp_setup.txt` and bespoke Rscripts
 3) `output/` - empty (will be filled by SLAMtrack outputs)  
 
 The `metadata.csv` file can have any desired user-determined fields, but must include:  
@@ -35,9 +35,14 @@ The `metadata.csv` file can have any desired user-determined fields, but must in
 The `exp_setup.txt` file contains a free-text description of the experimental design.  
 
 
-### Scripts
+The bespoke R scripts are:  
 
-Need to set parameters in `SLAMtrack_00_setup.R`, e.g.:  
+- `SLAMtrack_x0_parameters.R`  
+- `SLAMtrack_x1_repairnames.R` - optional code to amend sample names in the slamdunk summary file  
+- `SLAMtrack_x2_factors.R` - optional code to set factor order (e.g. for experimental groups) 
+
+
+Need to set parameters in `SLAMtrack_x0_parameters.R`, e.g.:  
 
 ```{r example_parameters}
 
@@ -57,11 +62,6 @@ cR_nudge <- 10e-9                     # shift when plotting mutation rates on a 
 threshold_TC_centile <- 0.99          # threshold for calling labelled reads
 
 ```
-
-Can add code to the following optional scripts:  
-
-- `SLAMtrack_x1_repairnames.R` - to amend sample names in the slamdunk summary file  
-- `SLAMtrack_x2_factors.R` - to set factor order (e.g. for experimental groups)  
 
 
 ## Workflow
