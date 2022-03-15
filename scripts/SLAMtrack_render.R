@@ -20,8 +20,8 @@ render_SLAMtrack <- function(fname, exp_type) {
   #  render_SLAMtrack_single("1_QC.Rmd", fname, exp_type, dir_data)
   #  render_SLAMtrack_single("2_mutations.Rmd", fname, exp_type, dir_data)
   #  render_SLAMtrack_single("3_TC.Rmd", fname, exp_type, dir_data)
-    render_SLAMtrack_single("4_labelled_genes.Rmd", fname, exp_type, dir_data)
-    render_SLAMtrack_single("4_labelled_genes_ARCHIVED.Rmd", fname, exp_type, dir_data)
+     render_SLAMtrack_single("4_labelled_genes.Rmd", fname, exp_type, dir_data)
+  #  render_SLAMtrack_single("4_labelled_genes_ARCHIVED.Rmd", fname, exp_type, dir_data)
   #  render_SLAMtrack_single("5_miniMAP.Rmd", fname, exp_type, dir_data)
     
   }
@@ -30,8 +30,8 @@ render_SLAMtrack <- function(fname, exp_type) {
     
   #  render_SLAMtrack_single("1_QC.Rmd", fname, exp_type, dir_data)
   #  render_SLAMtrack_single("3_TC.Rmd", fname, exp_type, dir_data)
-    render_SLAMtrack_single("4_labelled_genes.Rmd", fname, exp_type, dir_data)
-    render_SLAMtrack_single("4_labelled_genes_ARCHIVED.Rmd", fname, exp_type, dir_data)
+     render_SLAMtrack_single("4_labelled_genes.Rmd", fname, exp_type, dir_data)
+  #  render_SLAMtrack_single("4_labelled_genes_ARCHIVED.Rmd", fname, exp_type, dir_data)
   }
   
 }
