@@ -2,7 +2,7 @@
 
 ## Writing the paper
 
-- idenfity "robustly labelled" genes using delta method  
+- idenfity "robustly labelled" genes using delta method - see 4b_test!  
 
 - add back in PCA plots (+/- DEA) as 1a_DEA.Rmd ---> DEFER  
 - re-run all existing data through SLAMtrack pipeline

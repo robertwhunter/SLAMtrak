@@ -26,6 +26,7 @@ exp_type <<- params$exp_type
 source(".Rprofile")
 source("scripts/SLAMtrack_00_setup.R")
 source("scripts/SLAMtrack_11_import_quick.R")
+source("scripts/SLAMtrack_30_labelled_genes_functions.R")
 
 knitr::opts_chunk$set(
   echo = FALSE, 
@@ -36,528 +37,211 @@ knitr::opts_chunk$set(
   
 ```
 
-# Approach 1 = threshold T>C conversion rate
+# Finding labelled genes
 
-## Identifying labelled reads in the tissue of origin
+In order to identify labelled genes, calculate gene-wise delta T>C conversion rates.  In other words, for each gene find the difference between the median T>C conversion rate in a positive group (e.g. Cre pos) and a control group (e.g. Cre neg).  
 
-Using the negative control group, `r baseline_group`, we can define a threshold of T>C conversion that is likely to signify labelling.  This is set as any conversion rate exceeding a given centile (`r threshold_TC_centile`) in this control group.    
-
-```{r set_TC_threshold_origin}
-
-df_tcounts <- df_tcounts %>% drop_na(conversionRate)
+```{r get_deltas}
 
 df_tcounts %>% 
-  filter(tissue == exp_tissue_origin) %>% 
-  filter(group == baseline_group) %>% 
-  select(conversionRate) -> baseline_conversionRates
-
-baseline_conversionRates$conversionRate %>% 
-  quantile(threshold_TC_centile) -> threshold_TC_absolute
+  get_delta(exp_tissue = exp_tissue_origin, 
+            group1 = baseline_group, 
+            group2 = neg_group) -> df_delta_origin_baseline
 
 df_tcounts %>% 
-  filter(tissue == exp_tissue_origin) %>% 
-  ggplot(aes(x = group, y = conversionRate)) +
-  geom_violin(fill = NA) +  
-  geom_jitter(alpha = 0.01) +
-  scale_y_sqrt() +
-  geom_hline(yintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
-
-p %>% add_theme_SLAMtrack()
+  get_delta(exp_tissue = exp_tissue_origin, 
+            group1 = neg_group, 
+            group2 = pos_group) -> df_delta_origin
 
 df_tcounts %>% 
-  filter(tissue == exp_tissue_origin) %>% 
-  mutate(
-    conversionRate = conversionRate + cR_nudge
-  ) %>% 
-  ggplot(aes(y = 1, x = conversionRate, colour = group)) +
-  geom_density_ridges(fill = NA) +
-  scale_x_log10() +
-  geom_vline(xintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
-
-p %>% add_theme_SLAMtrack()
-
-df_tcounts %>% 
-  filter(tissue == exp_tissue_origin) %>% 
-  mutate(
-    conversionRate = conversionRate + cR_nudge
-  ) %>% 
-  ggplot(aes(y = library, x = conversionRate, fill = group)) +
-  geom_density_ridges(alpha = 0.6) +
-  scale_x_log10() +
-  geom_vline(xintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
-
-p %>% add_theme_SLAMtrack()
-
-```
-
-We can then classify each gene, for each library, as being either `labelled`, `not labelled`.  
-
-```{r count_labelled_genes_origin}
-
-df_tcounts %>% 
-  filter(tissue == exp_tissue_origin) %>% 
-  mutate(
-    labelled = case_when(
-      conversionRate < threshold_TC_absolute ~ "not labelled",
-      conversionRate >= threshold_TC_absolute ~ "labelled"
-    )) -> df_tcounts_origin
-
-df_tcounts_origin %>% 
-  group_by(sample_name) %>% 
-  summarise(
-    group = group[1],
-    genes_all = length(labelled),
-    genes_labelled = sum(labelled == "labelled"),
-    pc = genes_labelled / genes_all
-  ) %>% 
-  arrange(group, sample_name) -> t
-
-t %>% knitr::kable()
-
-t %>% 
-  group_by(group) %>% 
-  summarise(
-    percent_labelled = CI_95(pc, digit = 3)
-  ) %>% knitr::kable()
-
-t %>% 
-  ggplot(aes(x = group, y = pc)) + 
-  geom_boxplot(width = 0.2, alpha = 0.6, colour = "grey") +
-  geom_jitter(width = 0.0, colour = "red") +
-  ylab("percent genes labelled") -> p
-
-p %>% add_theme_SLAMtrack()
-
-```
-
-
-How does labelling correlate with gene abundance?  Bin genes by abundance and plot % of labelled reads:
-
-```{r plot_labelling_by_cpm_origin}
-
-df_tcounts_origin %>% 
-  mutate(reads_band = cut_width(readsCPM, width = 10)) %>% 
-  group_by(group, library, reads_band) %>% 
-  summarise(
-    mean_CPM = mean(readsCPM),
-    sum_CPM = sum(readsCPM),
-    sum_lab = sum(labelled == "labelled"),
-    total = length(labelled),
-    pc = sum_lab / total
-  ) %>% 
-  mutate(
-    cum_CPM = cumsum(sum_CPM)
-    )-> df_tcounts_labelled_cut
-
-df_tcounts_labelled_cut %>% 
-  ggplot(aes(x = mean_CPM, y = pc, colour = group)) +
-  geom_line(aes(group = library)) +
-  scale_x_log10() +
-  coord_cartesian(xlim = c(1, 1000)) +
-  xlab("CPM") +
-  ylab("Labelled reads (%)") -> p
-
-p %>% add_theme_SLAMtrack()
-
-df_tcounts_labelled_cut %>% 
-  ggplot(aes(x = mean_CPM, y = pc, colour = group)) +
-#  geom_line(aes(group = library)) +
-  geom_smooth(fullrange = TRUE) +
-  scale_x_log10() +
-  coord_cartesian(xlim = c(2, 100)) +
-  xlab("CPM") +
-  ylab("Labelled reads (%)") -> p
-
-p %>% add_theme_SLAMtrack()
-
-```
-
-
-
-## Identifying labelled reads in the target tissue
-
-Using the negative control group, `r baseline_group`, we can define a threshold of T>C conversion that is likely to signify labelling.  This is set as any conversion rate exceeding a given centile (`r threshold_TC_centile`) in this control group.    
-
-```{r set_TC_threshold_target}
-
-df_tcounts %>% 
-  filter(tissue == exp_tissue_target) %>% 
-  filter(group == baseline_group) %>% 
-  select(conversionRate) -> baseline_conversionRates
-
-baseline_conversionRates$conversionRate %>% 
-  quantile(threshold_TC_centile) -> threshold_TC_absolute
-
-df_tcounts %>% 
-  filter(tissue == exp_tissue_target) %>% 
-  ggplot(aes(x = group, y = conversionRate)) +
-  geom_violin(fill = NA) +  
-  geom_jitter(alpha = 0.01) +
-  scale_y_sqrt() +
-  geom_hline(yintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
-
-p %>% add_theme_SLAMtrack()
-
-df_tcounts %>% 
-  filter(tissue == exp_tissue_target) %>% 
-  mutate(
-    conversionRate = conversionRate + cR_nudge
-  ) %>% 
-  ggplot(aes(y = 1, x = conversionRate, colour = group)) +
-  geom_density_ridges(fill = NA) +
-  scale_x_log10() +
-  geom_vline(xintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
-
-p %>% add_theme_SLAMtrack()
-
-df_tcounts %>% 
-  filter(tissue == exp_tissue_target) %>% 
-  mutate(
-    conversionRate = conversionRate + cR_nudge
-  ) %>% 
-  ggplot(aes(y = library, x = conversionRate, fill = group)) +
-  geom_density_ridges(alpha = 0.6) +
-  scale_x_log10() +
-  geom_vline(xintercept = threshold_TC_absolute, colour = "red", size = 0.5, linetype = 2) -> p
-
-p %>% add_theme_SLAMtrack()
+  get_delta(exp_tissue = exp_tissue_target, 
+            group1 = neg_group, 
+            group2 = pos_group) -> df_delta_target
 
 ```
 
 <br>
 <br>
 
-We can then classify each gene, for each library, as being either `labelled`, `not labelled`.  
+## Basal rates
 
-```{r count_labelled_genes_target}
+First compare the `r baseline_group` and `r neg_group` groups to establish distribution of deltas under basal conditions.  Set a threshold at the `r threshold_delta_basal_centile` centile, above which a read is considered labelled in `r exp_tissue_origin`.  
 
-df_tcounts %>% 
-  filter(tissue == exp_tissue_target) %>% 
-  mutate(
-    labelled = case_when(
-      conversionRate < threshold_TC_absolute ~ "not labelled",
-      conversionRate >= threshold_TC_absolute ~ "labelled"
-    )) -> df_tcounts_target
+```{r baseline_rates}
 
-df_tcounts_target %>% 
-  group_by(sample_name) %>% 
-  summarise(
-    group = group[1],
-    genes_all = length(labelled),
-    genes_labelled = sum(labelled == "labelled"),
-    pc = genes_labelled / genes_all
-  ) %>% 
-  arrange(group, sample_name) -> t
+Qx_origin_baseline <- df_delta_origin_baseline$delta %>% quantile(threshold_delta_basal_centile)
 
-t %>% knitr::kable()
+df_delta_origin_baseline %>% delta_tabulate()
+df_delta_origin_baseline %>% delta_plot_distrubution(Qx_origin_baseline) -> p
+df_delta_origin_baseline %>% delta_plot_vs_cpm() -> q
 
-t %>% 
-  group_by(group) %>% 
-  summarise(
-    percent_labelled = CI_95(pc, digit = 3)
-  ) %>% knitr::kable()
-
-t %>% 
-  ggplot(aes(x = group, y = pc)) + 
-  geom_boxplot(width = 0.2, alpha = 0.6, colour = "grey") +
-  geom_jitter(width = 0.0, colour = "red") +
-  ylab("percent genes labelled") -> p
-
-p %>% add_theme_SLAMtrack()
+p$plot
+q$plot_full
 
 ```
 
+<br>
+<br>
 
-How does labelling correlate with gene abundance?  Bin genes by abundance and plot % of labelled reads:
+## Labelling in tissue of origin  
 
-```{r plot_labelling_by_cpm_target}
+Then compare the `r pos_group` and `r neg_group` in order to determine which genes are labelled in `r exp_tissue_origin` under experimental conditions.  
 
-df_tcounts_target %>% 
-  mutate(reads_band = cut_width(readsCPM, width = 10)) %>% 
-  group_by(group, library, reads_band) %>% 
-  summarise(
-    mean_CPM = mean(readsCPM),
-    sum_CPM = sum(readsCPM),
-    sum_lab = sum(labelled == "labelled"),
-    total = length(labelled),
-    pc = sum_lab / total
-  ) %>% 
+<br>
+
+Classify genes in `r exp_tissue_origin` as being one of:    
+
+- definitely labelled (delta exceeds `r threshold_delta_basal_centile` centile in basal conditions)  
+- definitely NOT labelled (delta less then `r 1 - threshold_delta_basal_centile` centile in basal conditions)  
+- possibly labelled (delta between these thresholds)  
+- not abundant (median CPM below `r threshold_median_cpm_abundant`) - this trumps other three criteria  
+
+
+```{r call_labelled_genes}
+
+df_delta_origin %>% 
   mutate(
-    cum_CPM = cumsum(sum_CPM)
-    )-> df_tcounts_labelled_cut
-
-df_tcounts_labelled_cut %>% 
-  ggplot(aes(x = mean_CPM, y = pc, colour = group)) +
-  geom_line(aes(group = library)) +
-  scale_x_log10() +
-  coord_cartesian(xlim = c(1, 1000)) +
-  xlab("CPM") +
-  ylab("Labelled reads (%)") -> p
-
-p %>% add_theme_SLAMtrack()
-
-df_tcounts_labelled_cut %>% 
-  ggplot(aes(x = mean_CPM, y = pc, colour = group)) +
-#  geom_line(aes(group = library)) +
-  geom_smooth(fullrange = TRUE) +
-  scale_x_log10() +
-  coord_cartesian(xlim = c(2, 100)) +
-  xlab("CPM") +
-  ylab("Labelled reads (%)") -> p
-
-p %>% add_theme_SLAMtrack()
-
-```
-
-
-We can then write lists of the genes with `r exp_tissue_target` that are:
-
-- present and ALWAYS labelled within `r exp_tissue_origin` 
-- present and SOMETIMES labelled within `r exp_tissue_origin` 
-- present and NEVER labelled within `r exp_tissue_origin` 
-- NOT present within `r exp_tissue_origin`
-
-...and then compare labelling rates within these groups.  
-
-
-```{r classify_genes_in_target}
-
-df_tcounts_origin %>% 
-  filter(readsCPM > 0) %>% 
-  group_by(gene_name, group) %>% 
-  summarise(
-    n_labelled = sum(labelled == "labelled"),
-    n_unlabelled = sum(labelled == "not labelled")
-  ) %>% 
-  mutate(
-    n = n_labelled + n_unlabelled,
-    classification = case_when(
-      n == n_labelled ~ "always",
-      n == n_unlabelled ~ "never"
+    labelled_in_origin = case_when(
+      median_CPM >= threshold_median_cpm_abundant & delta >= Qx_origin_baseline ~ paste0("definitely labelled in ", exp_tissue_origin),
+      median_CPM >= threshold_median_cpm_abundant & delta <= -Qx_origin_baseline ~ paste0("definitely not labelled in ", exp_tissue_origin),
+      median_CPM >= threshold_median_cpm_abundant & delta > -Qx_origin_baseline & delta < Qx_origin_baseline ~ paste0("possibly labelled in ", exp_tissue_origin),
+      median_CPM < threshold_median_cpm_abundant ~ paste0("not abundant in ", exp_tissue_origin)
     )
   ) %>% 
-  select(gene_name, group, classification) %>% 
-  pivot_wider(names_from = group, values_from = classification) -> df_labelling_in_origin
-  
-df_labelling_in_origin %>% 
-  mutate(
-    labelling_in_origin = case_when(
-      !!as.name(pos_group) == "always" & !!as.name(neg_group) == "never" ~ "robust positive",
-      !!as.name(pos_group) == "never" ~ "robust negative",
-      !!as.name(neg_group) != "never" ~ "leaky"
-    )) %>% 
-  select(gene_name, labelling_in_origin) -> df_labelling_in_origin_summary
+  select(gene_name, labelled_in_origin) -> df_genes_labelled_in_origin
 
-df_labelling_in_origin_summary$labelling_in_origin %>% 
-  NA_sub_x(paste0("not classified in ", exp_tissue_origin)) ->
-  df_labelling_in_origin_summary$labelling_in_origin
+df_delta_origin %>% 
+  left_join(df_genes_labelled_in_origin) -> df_delta_origin
 
-df_tcounts_target %>% 
-  left_join(df_labelling_in_origin_summary, by = c("gene_name")) -> df_tcounts_target
+df_delta_target %>% 
+  left_join(df_genes_labelled_in_origin) -> df_delta_target
 
-df_tcounts_target$labelling_in_origin %>% 
-  NA_sub_x(paste0("not present in ", exp_tissue_origin)) %>% 
-  fct_relevel(
-    "robust positive", 
-    "robust negative", 
-    "leaky"
-    ) -> df_tcounts_target$labelling_in_origin
-
+df_delta_target$labelled_in_origin %>% 
+  NA_sub_x(paste0("not present in ", exp_tissue_origin)) -> df_delta_target$labelled_in_origin
 
 ```
 
+<br>
+<br>
 
-The number of genes in each category is:  
+NB The distribution of gene abundance in `r exp_tissue_origin` is:
 
-```{r show_genes_in_target}
+```{r median_cpm_threshold}
 
-new_name = paste0("labelling in ", exp_tissue_origin)
+df_delta_origin %>% 
+  ggplot(aes(x = median_CPM)) + 
+  geom_histogram(alpha = 0.6, fill = "red") + 
+  geom_vline(aes(xintercept = threshold_median_cpm_abundant), linetype = 2, colour = "blue") +
+  scale_x_log10() +
+  theme_SLAMtrack()  
 
-colnames(df_tcounts_target)[which(colnames(df_tcounts_target) == "labelling_in_origin")] <- new_name
+```
 
-df_tcounts_target %>% 
-  group_by(sample_name, !!as.name(new_name)) %>% 
+<br>
+<br>
+
+Number of genes so classified in `r exp_tissue_origin`:  
+
+```{r show_labelled_genes_origin}
+df_genes_labelled_in_origin %>% 
+  group_by(labelled_in_origin) %>% 
   summarise(n = length(gene_name)) %>% 
-    group_by(!!as.name(new_name)) %>% 
-    summarise(
-      median = median(n),
-      Q1 = quantile(n, 0.25),
-      Q3 = quantile(n, 0.75)
-    ) %>% knitr::kable(caption = paste0("number of genes in each category within each ", exp_tissue_target, " library"))
-
-```
-
-
-Does rate of T>C conversion differ between these groups?
-
-```{r plot_genes_in_target_by_category}
-
-df_tcounts_target %>% 
-  mutate(
-    conversionRate = conversionRate + cR_nudge
-  ) %>% 
-    ggplot(aes(y = 1, x = conversionRate, colour = group)) +
-    geom_density_ridges(fill = NA) +
-    scale_x_log10() +
-    facet_wrap(as.formula(paste0("~ ", "`", new_name, "`"))) +
-    xlab("T>C conversion rate") +
-    ylab("") +
-    ggtitle(paste0(
-      "conversion rates in ", 
-      exp_tissue_target, 
-      "\n(stratified by labelling status of gene in ",
-      exp_tissue_origin,
-      ")"
-    )) -> p
-
-p <- p %>% add_theme_SLAMtrack()
-p + theme_smaller()
-
-df_tcounts_target %>% 
-  filter(group %in% c(pos_group, neg_group)) %>% 
-  mutate(
-    conversionRate = conversionRate + cR_nudge
-  ) %>% 
-    ggplot(aes(y = 1, x = conversionRate, colour = group)) +
-    geom_density_ridges(fill = NA) +
-    scale_x_log10() +
-    facet_wrap(as.formula(paste0("~ ", "`", new_name, "`")))  +
-    xlab("T>C conversion rate") +
-    ylab("") +
-    ggtitle(paste0(
-      "conversion rates in ", 
-      exp_tissue_target, 
-      "\n(stratified by labelling status of gene in ",
-      exp_tissue_origin,
-      ")"
-    )) -> q
-
-q <- q %>% add_theme_SLAMtrack()
-q + theme_smaller()
-
-```
-
-
-
-# Approach 2 = gene-wise delta T>C conversion rate
-
-## In the tissue of origin
-
-```{r delta_origin}
-
-df_tcounts %>%
-  filter(tissue == exp_tissue_origin) %>% 
-  filter(group == baseline_group) %>% 
-  group_by(gene_name) %>% 
-  summarise(
-    mean_CPM = mean(readsCPM)
-    ) -> df_tcounts_origin_cpm
-
-df_tcounts %>%
-  filter(tissue == exp_tissue_origin) %>% 
-  group_by(gene_name, group) %>% 
-  summarise(
-    mean_CR = mean(conversionRate)
-    ) %>% 
-  pivot_wider(names_from = group, values_from = mean_CR) %>% 
-  mutate(delta := !!as.name(pos_group) - !!as.name(neg_group)) %>% 
-  left_join(df_tcounts_origin_cpm) %>% 
-  mutate(
-    `delta sign` = case_when(
-      delta > 0 ~ "pos", 
-      delta < 0 ~ "neg", 
-      delta == 0 ~ "zero")
-  ) -> df_tcounts_delta_origin
-
-df_tcounts_delta_origin %>% 
-  filter(mean_CPM > 5) %>% 
-  ggplot(aes(x = mean_CPM, y = delta)) + 
-  geom_point(alpha = 0.05) +
-  geom_hline(yintercept = 0, colour = "Red", linetype = 2) +
-  scale_x_log10() +
-  theme_SLAMtrack()
-
-df_tcounts_delta_origin %>% 
-  drop_na() %>% 
-  group_by(`delta sign`) %>% 
-  summarise(count = n()) %>% 
   knitr::kable()
 
-df_tcounts_delta_origin %>% 
-  filter(mean_CPM > 1) %>% 
- filter(abs(delta) < 0.1) %>% 
-  ggplot(aes(x = delta, fill = `delta sign`)) +
-  geom_histogram() + 
-  facet_wrap(~`delta sign`) -> p
+```
 
-p %>% add_theme_SLAMtrack() + theme_smaller()
 
-df_tcounts_delta_origin %>% 
-  merge_markers_delta(df_marker_origin) %>% 
-  plot_markers_points_delta()
+Number of genes so classified - i.e. according to labelling status in `r exp_tissue_origin` in `r exp_tissue_target`:
+
+```{r show_labelled_genes_target}
+df_delta_target %>% 
+  group_by(labelled_in_origin) %>% 
+  summarise(n = length(gene_name)) %>% 
+  knitr::kable()
 
 ```
 
-## In the target tissue
+<br>
+<br>
 
-```{r delta_target}
+## Delta TC in tissue of origin
 
-df_tcounts %>%
-  filter(tissue == exp_tissue_target) %>% 
-  filter(group == baseline_group) %>% 
-  group_by(gene_name) %>% 
-  summarise(
-    mean_CPM = mean(readsCPM)
-    ) -> df_tcounts_target_cpm
+Plotting gene-wise delta TC in `r exp_tissue_origin`:  
 
-df_tcounts %>%
-  filter(tissue == exp_tissue_target) %>% 
-  group_by(gene_name, group) %>% 
-  summarise(
-    mean_CR = mean(conversionRate)
-    ) %>% 
-  pivot_wider(names_from = group, values_from = mean_CR) %>% 
-  mutate(delta := !!as.name(pos_group) - !!as.name(neg_group)) %>% 
-  left_join(df_tcounts_target_cpm) %>% 
-  mutate(
-    `delta sign` = case_when(
-      delta > 0 ~ "pos", 
-      delta < 0 ~ "neg", 
-      delta == 0 ~ "zero")
-  ) -> df_tcounts_delta_target
+```{r show_delta_origin}
 
-df_tcounts_delta_target %>% 
-  filter(mean_CPM > 5) %>% 
-  ggplot(aes(x = mean_CPM, y = delta)) + 
-  geom_point(alpha = 0.05) +
-  geom_smooth() +
-  geom_hline(yintercept = 0, colour = "Red", linetype = 2) +
-  scale_x_log10() +
-  theme_SLAMtrack()
+df_delta_origin %>% delta_tabulate()
 
-df_tcounts_delta_target %>% 
-  drop_na() %>% 
-  group_by(`delta sign`) %>% 
-  summarise(count = n()) %>% 
-  knitr::kable()
+df_delta_origin %>% delta_plot_distrubution(Qx_origin_baseline) -> p
+p$plot
+p$plot + facet_wrap(~labelled_in_origin)
 
-df_tcounts_delta_target %>% 
-  filter(mean_CPM > 1) %>% 
-  filter(abs(delta) < 0.005) %>% 
-  ggplot(aes(x = delta, fill = `delta sign`)) +
-  geom_histogram() + 
-  facet_wrap(~`delta sign`) -> p
+df_delta_origin %>% delta_plot_rug() 
 
-p %>% add_theme_SLAMtrack() + theme_smaller()
+df_delta_origin %>% delta_plot_vs_cpm() -> q
+q$plot_full
 
-df_tcounts_delta_target %>% 
-  merge_markers_delta(df_marker_origin) %>% 
-  plot_markers_points_delta(cpm_threshold = 10, delta_threshold = 0.05)
+```
 
-df_tcounts_delta_target %>% 
-  merge_markers_delta(df_marker_target) %>% 
-  plot_markers_points_delta(delta_threshold = 0.05)
+<br>
+<br>
 
-  
+## Delta TC in target tissue
+
+Look within those reads not present at all in `r exp_tissue_origin`; set a threshold at centile `r threshold_delta_target_centile`, above which gene called as being labelled in `r exp_tissue_target`.  
+
+```{r call_labelled_genes_in_target}
+
+df_delta_target %>% 
+  filter(labelled_in_origin == paste0("not present in ", exp_tissue_origin)) %>% 
+  select(delta) -> df_delta_target_not_in_origin
+
+Qx_target_not_in_origin <- df_delta_target_not_in_origin$delta %>% quantile(threshold_delta_target_centile)
+
+```
+
+<br>
+<br>
+
+Then plot gene-wise delta TC in `r exp_tissue_target`:  
+
+```{r show_delta_target}
+
+df_delta_target %>% delta_tabulate()
+
+df_delta_target %>% delta_plot_distrubution(Qx_target_not_in_origin) -> p
+p$plot
+p$plot + facet_wrap(~labelled_in_origin)
+
+df_delta_target %>% delta_plot_rug() 
+
+df_delta_target %>% delta_plot_vs_cpm() -> q
+q$plot_full
+
+```
+
+<br>
+<br>
+
+## Final list of transferred genes
+
+Using these criteria, we can write a list of genes that are likely to have been transferred from `r exp_tissue_origin` to `r exp_tissue_target`.   
+
+```{r list_labelled_genes}
+
+df_delta_target %>% 
+  filter(labelled_in_origin == paste0("definitely labelled in ", exp_tissue_origin)) %>% 
+  filter(delta > Qx_target_not_in_origin) %>% 
+  select(gene_name, delta) -> df_transferred_genes
+
+```
+
+
+There are `r nrow(df_transferred_genes)` genes in this list:  
+
+```{r show_labelled_genes}
+
+df_transferred_genes %>% knitr::kable()
+
 ```
 
