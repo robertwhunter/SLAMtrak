@@ -12,6 +12,7 @@ dir_scripts <- here("scripts")
 
 ## SET-UP SCRIPTS ----
 
+here(dir_scripts, "SLAMtrack_x0_parameters_default.R") %>% source()
 here(dir_data, "input", "SLAMtrack_x0_parameters.R") %>% source()
 
 here(dir_scripts, "SLAMtrack_01_plotting_themes.R") %>% source()

@@ -135,3 +135,42 @@ delta_plot_rug <- function(df_delta) {
     theme_SLAMtrack() 
   
 }
+
+
+delta_merge_markers <- function(df_delta, df_markers, cpm_threshold = 10, top_n = 8) {
+  
+  df_delta %>% 
+    left_join(df_markers, by = c("gene_name" = "gene")) -> df_merged
+  
+  df_merged$cell %>% NA_sub_x("Not a marker gene") -> df_merged$cell
+  
+  df_merged %>% 
+    select(-tissue) %>% 
+    drop_na() %>% 
+    group_by(cell) %>% 
+    summarise(
+      n_genes_high = sum(median_CPM > cpm_threshold)
+    ) %>% 
+    arrange(desc(n_genes_high)) -> df_ranked
+  
+  df_merged %>% 
+    filter(cell %in% df_ranked$cell[1:top_n]) %>% 
+    return()
+  
+}
+
+delta_plot_markers_points <- function(df_plot) {
+  df_plot %>% 
+    ggplot(aes(x = cell, y = delta, size = median_CPM)) +
+    geom_jitter(alpha = 0.3, width = 0.1) +
+    geom_hline(yintercept = 0, colour = "Red", linetype = 2) +
+    coord_flip() +
+    theme_SLAMtrack()
+}
+
+delta_plot_markers_ridges <- function(df_plot) {
+  df_plot %>% 
+    ggplot(aes(x = delta, y = cell)) +
+    geom_density_ridges(fill = "black", colour = NA, alpha = 0.6, panel_scaling = FALSE) + 
+    theme_SLAMtrack()
+}

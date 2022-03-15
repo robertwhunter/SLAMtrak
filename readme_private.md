@@ -2,7 +2,9 @@
 
 ## Writing the paper
 
-- idenfity "robustly labelled" genes using delta method - see 4b_test!  
+- idenfity "robustly labelled" genes using delta method...
+- ...need to add in stratifying delta by marker genes - and also counting number of labelled genes per marker gene
+- move default settings to common parameters file? - then overwritten locally  
 
 - add back in PCA plots (+/- DEA) as 1a_DEA.Rmd ---> DEFER  
 - re-run all existing data through SLAMtrack pipeline

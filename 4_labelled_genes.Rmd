@@ -26,7 +26,7 @@ exp_type <<- params$exp_type
 source(".Rprofile")
 source("scripts/SLAMtrack_00_setup.R")
 source("scripts/SLAMtrack_11_import_quick.R")
-source("scripts/SLAMtrack_30_labelled_genes_functions.R")
+source("scripts/SLAMtrack_21_labelled_genes.R")
 
 knitr::opts_chunk$set(
   echo = FALSE, 
@@ -143,6 +143,7 @@ df_delta_origin %>%
 Number of genes so classified in `r exp_tissue_origin`:  
 
 ```{r show_labelled_genes_origin}
+
 df_genes_labelled_in_origin %>% 
   group_by(labelled_in_origin) %>% 
   summarise(n = length(gene_name)) %>% 
@@ -180,6 +181,33 @@ df_delta_origin %>% delta_plot_rug()
 
 df_delta_origin %>% delta_plot_vs_cpm() -> q
 q$plot_full
+
+```
+
+<br>
+<br>
+
+### Delta TC in known marker genes
+
+Within `r exp_tissue_origin`, what is gene-wise delta TC and labelling status within known marker genes?  
+
+```{r delta_by_marker_gene}
+
+df_delta_origin %>% 
+  delta_merge_markers(df_marker_origin) %>% 
+  delta_plot_markers_points()
+
+df_delta_origin %>% 
+  delta_merge_markers(df_marker_origin) %>% 
+  delta_plot_markers_ridges()
+
+df_delta_origin %>% 
+  delta_merge_markers(df_marker_origin) %>% 
+  group_by(cell, labelled_in_origin) %>% 
+  summarise(n = length(gene_name)) %>% 
+  pivot_wider(names_from = labelled_in_origin, values_from = n) %>% 
+  NA_sub_zero() %>% 
+  knitr::kable()
 
 ```
 
