@@ -93,4 +93,14 @@ threshold_delta_target_centile <- 0.95  # threshold for calling labelled reads i
 ## Outputs
 
 Intermediate .csv datafiles - to save time when re-importing data for analysis.  
-Html reports with figures as separate files.  
+Html reports.  
+
+Having difficulty in setting figures output directory (becuase when .Rmd files rendered with output directory then there is a conflict between absolute and relative paths that I don't think has been resolved).  Therefore, to extract images back from output .html files, use pandoc:  
+
+```{bash, eval = FALSE}
+
+for f in *.html; do pandoc --from=html $f --extract-media=${f%.*}_images > ${f%.*}_stripped.html; done
+
+# this command stored as alias: slam_extract_images
+
+```

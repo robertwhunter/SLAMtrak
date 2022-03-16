@@ -2,17 +2,14 @@
 
 ## Writing the paper
 
-- idenfity "robustly labelled" genes using delta method...
-- ...need to add in stratifying delta by marker genes - and also counting number of labelled genes per marker gene
-- move default settings to common parameters file? - then overwritten locally  
-
+- idenfity "robustly labelled" genes using delta method ---> DONE
 - add back in PCA plots (+/- DEA) as 1a_DEA.Rmd ---> DEFER  
-- re-run all existing data through SLAMtrack pipeline
+- re-run all existing data through SLAMtrack pipeline ---> DONE
 - make figures  
 - write paper  
 
 - AAV8 mRNA > exemplar working well
-- podo mRNA > also works but less well
+- podo mRNA > can label but no transfer
 - AAV8 miRNA > can label miRNA but at limit of detection for transfer?  
 - podo miRNA > can we label - yes!
 
